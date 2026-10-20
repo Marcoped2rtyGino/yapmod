@@ -37,10 +37,10 @@ fn main() {
                 .shadow(true)
                 .initialization_script(&preinject)
                 .on_page_load(|webview, payload| {
-                    if payload.event() == PageLoadEvent::Finished {
-                        if let Err(error) = webview.eval(injection::postinject()) {
-                            eprintln!("failed to inject postinject script: {error}");
-                        }
+                    if payload.event() == PageLoadEvent::Finished
+                        && let Err(error) = webview.eval(injection::postinject())
+                    {
+                        eprintln!("failed to inject postinject script: {error}");
                     }
                 });
 
