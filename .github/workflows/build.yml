@@ -71,7 +71,6 @@ jobs:
           toolchain: stable
           target: ${{ matrix.target }}
           rustflags: ''
-          build-warnings: allow
           cache: false
 
       - name: Setup pnpm

@@ -48,7 +48,6 @@ jobs:
           toolchain: stable
           components: rustfmt
           rustflags: ''
-          build-warnings: allow
 
       - name: Rustfmt check
         run: cargo fmt --manifest-path ./src-tauri/Cargo.toml --all -- --check
@@ -71,7 +70,6 @@ jobs:
           toolchain: stable
           components: clippy
           rustflags: ''
-          build-warnings: allow
           cache: false
 
       - name: Setup pnpm

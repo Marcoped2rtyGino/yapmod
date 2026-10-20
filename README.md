@@ -24,6 +24,8 @@ Grab the latest build from the [Releases](https://github.com/ilyeshdz/yapmod/rel
 - **macOS**: `.dmg` (Intel and Apple Silicon)
 - **Linux**: `.deb`, `.rpm`, or `.AppImage`
 
+macOS builds are ad-hoc signed but not notarized. On first launch, right-click the app and choose **Open**, or allow it in **System Settings → Privacy & Security**.
+
 ## Community
 
 Join the official Yapper server: [yapper.website/invite/develop](https://yapper.website/invite/develop)
