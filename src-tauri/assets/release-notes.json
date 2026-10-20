@@ -50,5 +50,34 @@
         ]
       }
     ]
+  },
+  "0.2.0": {
+    "title": "Settings, links, and a website",
+    "date": "2026-10-20",
+    "summary": "This release puts yapmod's options where you expect them: inside Yapper's own settings page. It also adds an official website with direct downloads and makes external links open in your normal browser.",
+    "sections": [
+      {
+        "heading": "Highlights",
+        "items": [
+          "Added a Yapmod section to Yapper's settings, so desktop options live next to the rest of the app.",
+          "Added an official landing page with direct download links for macOS, Windows, and Linux.",
+          "External links now open in your default browser instead of inside the app."
+        ]
+      },
+      {
+        "heading": "New",
+        "items": [
+          "The native titlebar and start-maximized options can now be toggled from the settings page, and apply on the next launch.",
+          "Settings are stored in your config file and can be written to from the injected page.",
+          "The release notes modal now shows the version, release date, and changelog of every past release."
+        ]
+      },
+      {
+        "heading": "Fixed",
+        "items": [
+          "Following a link to another site no longer opens a broken window inside the desktop client."
+        ]
+      }
+    ]
   }
 }
