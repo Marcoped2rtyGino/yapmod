@@ -9,6 +9,6 @@
     "opener:default"
   ],
   "remote": {
-    "urls": ["https://yapper.website"]
+    "urls": ["https://yapper.website", "https://*.yapper.website"]
   }
 }
