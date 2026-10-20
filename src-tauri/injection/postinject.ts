@@ -1,29 +1,13 @@
-export {};
+import type { YapmodScope } from "./shared/types";
+import { upsertStyle } from "./shared/ui";
 
 const STYLE_ELEMENT_ID = "yapmod-injected-styles";
 const DRAG_REGION_ID = "yapmod-drag-region";
 
-type YapmodGlobal = {
-  preinject?: boolean;
-  applyCss?: (css: string) => void;
-};
-
-const globalScope = globalThis as typeof globalThis & {
-  __yapmod?: YapmodGlobal;
-};
+const globalScope = globalThis as YapmodScope;
 
 function applyCss(css: string): void {
-  let style = document.getElementById(
-    STYLE_ELEMENT_ID,
-  ) as HTMLStyleElement | null;
-
-  if (!style) {
-    style = document.createElement("style");
-    style.id = STYLE_ELEMENT_ID;
-    (document.head ?? document.documentElement).appendChild(style);
-  }
-
-  style.textContent = css;
+  upsertStyle(STYLE_ELEMENT_ID, css);
 }
 
 function ensureDragRegion(): void {
