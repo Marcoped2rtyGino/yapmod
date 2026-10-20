@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "yapmod",
+  "version": "0.1.0",
+  "identifier": "io.ilyeshdz.yapmod",
+  "build": {
+    "beforeDevCommand": "",
+    "devUrl": "http://yapper.website/",
+    "beforeBuildCommand": "",
+    "frontendDist": "https://yapper.website/"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "title": "yapmod",
+        "width": 800,
+        "height": 600
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "category": "SocialNetworking",
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}
