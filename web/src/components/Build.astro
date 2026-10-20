@@ -1,0 +1,65 @@
+---
+const ISSUES = "https://github.com/ilyeshdz/yapmod/issues";
+const SERVER = "https://yapper.website/invite/develop";
+
+const ways = [
+  {
+    title: "Report a bug",
+    body: "Something looks off or breaks? Tell us what happened and we'll take a look.",
+    href: ISSUES,
+    icon: `<path d="M12 3a9 9 0 0 0-9 9v3a3 3 0 0 0 3 3h1v-6H5v-.6A7 7 0 0 1 12 5a7 7 0 0 1 7 6.4V12h-2v6h1a3 3 0 0 0 3-3v-3a9 9 0 0 0-9-9z"></path><path d="M9 21h6"></path>`,
+  },
+  {
+    title: "Suggest a feature",
+    body: "Tell us what you would love yapmod to do next. The roadmap is open to everyone.",
+    href: ISSUES,
+    icon: `<path d="M12 3l2.2 6.4L21 11.6l-6.8 2.2L12 20.4l-2.2-6.6L3 11.6l6.8-2.2z"></path>`,
+  },
+  {
+    title: "Join the conversation",
+    body: "Chat with the community on the official Yapper server and follow along.",
+    href: SERVER,
+    icon: `<path d="M21 12a8 8 0 0 1-8 8H8l-4 3v-5.5A8 8 0 0 1 12 4h1a8 8 0 0 1 8 8z"></path><path d="M9 11h6M9 15h4"></path>`,
+  },
+];
+---
+
+<section class="sec" id="build" style="padding-top: 10px">
+  <div class="wrap two">
+    <div>
+      <h2>Built in the open.</h2>
+      <p class="sub" style="margin: 0">
+        yapmod is made by the people who use it. Every change is public, every idea is welcome, and
+        you can help decide what comes next.
+      </p>
+
+      <div class="cta" style="margin-top: 32px">
+        <a class="btn g" href={ISSUES}>Report a bug</a>
+        <a class="btn" href={SERVER}>Join the server</a>
+      </div>
+    </div>
+
+    <div class="ways">
+      {
+        ways.map((way) => (
+          <a class="way" href={way.href}>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <Fragment set:html={way.icon} />
+            </svg>
+            <div>
+              <h3>{way.title}</h3>
+              <p>{way.body}</p>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</section>

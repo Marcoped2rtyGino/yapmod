@@ -1,0 +1,184 @@
+---
+import { osIcons, type OsKey } from "../lib/os";
+
+const RELEASES = "https://github.com/ilyeshdz/yapmod/releases";
+
+type Item = { suffix: string; label: string; hint: string };
+
+const platforms: { os: OsKey; name: string; items: Item[] }[] = [
+  {
+    os: "win",
+    name: "Windows",
+    items: [
+      { suffix: "_x64-setup.exe", label: "Installer", hint: ".exe" },
+      { suffix: "_x64_en-US.msi", label: "Installer", hint: ".msi" },
+      { suffix: "_win64_portable.zip", label: "Portable", hint: ".zip" },
+    ],
+  },
+  {
+    os: "mac",
+    name: "macOS",
+    items: [
+      { suffix: "_aarch64.dmg", label: "Apple Silicon", hint: ".dmg" },
+      { suffix: "_x64.dmg", label: "Intel", hint: ".dmg" },
+    ],
+  },
+  {
+    os: "linux",
+    name: "Linux",
+    items: [
+      { suffix: "_amd64.AppImage", label: "AppImage", hint: "" },
+      { suffix: "_amd64.deb", label: "Debian", hint: ".deb" },
+      { suffix: "-1.x86_64.rpm", label: "Fedora", hint: ".rpm" },
+      { suffix: "_amd64_portable.tar.gz", label: "Portable", hint: ".tar.gz" },
+    ],
+  },
+];
+---
+
+<section class="sec" id="download" style="padding-top: 10px">
+  <div class="wrap">
+    <h2>Download yapmod for desktop</h2>
+    <p class="sub lg">
+      Use yapmod to easily talk while playing your favorite games, show what you're up to as your
+      status, and make Yapper yours: an open-source, moddable client that lives on your desktop.
+    </p>
+
+    <div class="dl-row" id="dl-row">
+      {
+        platforms.map((platform) => (
+          <div class="dl-item" data-os={platform.os}>
+            <button
+              class="btn dl-btn"
+              type="button"
+              aria-haspopup="true"
+              aria-expanded="false"
+              aria-controls={`dl-menu-${platform.os}`}
+            >
+              <svg
+                class="dl-os-icon"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <Fragment set:html={osIcons[platform.os]} />
+              </svg>
+              <span>{platform.name}</span>
+              <svg
+                class="dl-chevron"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.4"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </button>
+
+            <div class="dl-menu" id={`dl-menu-${platform.os}`} hidden>
+              <p class="dl-group-title">{platform.name}</p>
+              {platform.items.map((item) => (
+                <a href={RELEASES} data-suffix={item.suffix}>
+                  {item.label}
+                  {item.hint && <span>{item.hint}</span>}
+                </a>
+              ))}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+
+    <p class="fine" id="dl-meta" style="margin-top: 26px">
+      Free and open source. Older builds are always available on the
+      <a href={RELEASES} style="text-decoration: underline">releases page</a>.
+    </p>
+  </div>
+</section>
+
+<script>
+  import { assetUrl, latestRelease } from "../lib/releases";
+  import { detectArch, detectOs } from "../lib/os";
+
+  (async () => {
+    const os = detectOs();
+    const row = document.getElementById("dl-row");
+
+    if (os && row) {
+      // The visitor's platform goes first, that is the recommendation.
+      row.dataset.os = os;
+      document.querySelector(`.dl-item[data-os="${os}"] .dl-btn`)?.classList.add("g");
+    }
+
+    const release = await latestRelease();
+    if (!release) return;
+
+    // Point every option at the exact file of the latest release.
+    document.querySelectorAll<HTMLAnchorElement>("a[data-suffix]").forEach((link) => {
+      const url = assetUrl(release, link.dataset.suffix ?? "");
+      if (url) link.href = url;
+    });
+
+    // On macOS, the build matching the visitor's chip comes first.
+    if (os === "mac") {
+      const arch = await detectArch();
+      const menu = document.querySelector("#dl-menu-mac");
+      const wanted = arch === "x86" ? "_x64.dmg" : "_aarch64.dmg";
+      const link = menu?.querySelector<HTMLAnchorElement>(`a[data-suffix="${wanted}"]`);
+      if (menu && link) menu.insertBefore(link, menu.firstElementChild);
+    }
+
+    // Keep the last menu anchored to the right edge of its button.
+    const items = Array.from(document.querySelectorAll<HTMLElement>(".dl-item"));
+    const last = items.find((item) => {
+      const order = Number(getComputedStyle(item).order);
+      return !items.some((other) => Number(getComputedStyle(other).order) > order);
+    });
+    last?.classList.add("last");
+
+    const meta = document.getElementById("dl-meta");
+    if (meta) {
+      meta.innerHTML = `Version ${release.version} · Free and open source · Older builds are always available on the <a href="https://github.com/ilyeshdz/yapmod/releases" style="text-decoration: underline">releases page</a>.`;
+    }
+  })();
+
+  // Dropdown behaviour.
+  (() => {
+    const items = Array.from(document.querySelectorAll<HTMLElement>(".dl-item"));
+
+    const closeAll = (except?: HTMLElement) => {
+      for (const item of items) {
+        if (item === except) continue;
+        item.querySelector(".dl-menu")?.setAttribute("hidden", "");
+        item.querySelector(".dl-btn")?.setAttribute("aria-expanded", "false");
+      }
+    };
+
+    for (const item of items) {
+      const button = item.querySelector<HTMLButtonElement>(".dl-btn");
+      const menu = item.querySelector<HTMLElement>(".dl-menu");
+      if (!button || !menu) continue;
+
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const open = menu.hasAttribute("hidden");
+        closeAll(item);
+        menu.toggleAttribute("hidden", !open);
+        button.setAttribute("aria-expanded", String(open));
+      });
+
+      menu.addEventListener("click", (event) => {
+        if ((event.target as HTMLElement).closest("a")) closeAll();
+      });
+    }
+
+    document.addEventListener("click", () => closeAll());
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeAll();
+    });
+  })();
+</script>

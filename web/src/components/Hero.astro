@@ -1,0 +1,67 @@
+---
+import { genericIcon } from "../lib/os";
+---
+
+<header class="hero">
+  <div>
+    <h1>Yapper, made yours.</h1>
+    <p class="lead">
+      yapmod is a free, open-source desktop app for Yapper. Install it on Windows, macOS or Linux
+      and make it your own.
+    </p>
+    <div class="cta">
+      <a class="btn g" id="dl" href="https://github.com/ilyeshdz/yapmod/releases">
+        <span>Download <span id="dl-os">yapmod</span></span>
+        <svg
+          id="dl-icon"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          aria-hidden="true"
+          set:html={genericIcon}
+        >
+        </svg>
+      </a>
+      <a class="btn" href="https://github.com/ilyeshdz/yapmod">See the source</a>
+    </div>
+    <p class="fine">Free and open source. Unofficial, not affiliated with Yapper.</p>
+  </div>
+  <div class="art" aria-hidden="true">
+    <div class="logo"></div>
+  </div>
+</header>
+
+<script>
+  import { detectArch, detectOs, osIcons, osNames } from "../lib/os";
+  import { assetUrl, latestRelease } from "../lib/releases";
+
+  (async () => {
+    const os = detectOs();
+    const button = document.getElementById("dl") as HTMLAnchorElement | null;
+    const label = document.getElementById("dl-os");
+    const icon = document.getElementById("dl-icon");
+
+    if (!os) return;
+
+    if (label) label.textContent = `for ${osNames[os]}`;
+    if (icon) icon.innerHTML = osIcons[os];
+
+    const release = await latestRelease();
+    if (!release || !button) return;
+
+    let suffix: string | null = null;
+    if (os === "win") suffix = "_x64-setup.exe";
+    if (os === "linux") suffix = "_amd64.AppImage";
+    if (os === "mac") {
+      const arch = await detectArch();
+      suffix = arch === "arm" ? "_aarch64.dmg" : arch === "x86" ? "_x64.dmg" : null;
+    }
+
+    const url = suffix ? assetUrl(release, suffix) : undefined;
+    if (url) {
+      button.href = url;
+    } else if (os === "mac") {
+      // We cannot tell which Mac this is, so let the visitor pick a build.
+      button.href = "#download";
+    }
+  })();
+</script>
