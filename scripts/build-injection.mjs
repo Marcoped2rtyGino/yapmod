@@ -23,5 +23,6 @@ await build({
   minify: true,
   sourcemap: false,
   legalComments: "none",
+  loader: { ".svg": "text" },
   logLevel: "info",
 });
