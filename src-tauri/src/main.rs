@@ -1,8 +1,9 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use tauri::{WebviewUrl, WebviewWindowBuilder};
+use tauri::{WebviewUrl, WebviewWindowBuilder, webview::PageLoadEvent};
 
+mod injection;
 
 fn main() {
     tauri::Builder::default()
@@ -10,7 +11,7 @@ fn main() {
         .setup(|app| {
             let url = WebviewUrl::External("https://www.yapper.website/".parse()?);
             let title = format!("Yapmod - v{}", app.package_info().version);
-            WebviewWindowBuilder::new(app, "main", url)
+            let win = WebviewWindowBuilder::new(app, "main", url)
                 .title(title)
                 .inner_size(800.0, 600.0)
                 .resizable(true)
@@ -19,7 +20,17 @@ fn main() {
                 .zoom_hotkeys_enabled(true)
                 .decorations(true)
                 .shadow(true)
-                .build()?;
+                .initialization_script(injection::preinject())
+                .on_page_load(|webview, payload| {
+                    if payload.event() == PageLoadEvent::Finished {
+                        if let Err(error) = webview.eval(injection::postinject()) {
+                            eprintln!("failed to inject postinject script: {error}");
+                        }
+                    }
+                });
+
+            win.build()?;
+
             Ok(())
         })
         .run(tauri::generate_context!())

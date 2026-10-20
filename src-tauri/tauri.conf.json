@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "identifier": "io.ilyeshdz.yapmod",
   "build": {
-    "beforeDevCommand": "",
+    "beforeDevCommand": "pnpm injection:build",
     "devUrl": "http://yapper.website/",
-    "beforeBuildCommand": "",
+    "beforeBuildCommand": "pnpm injection:build",
     "frontendDist": "https://yapper.website/"
   },
   "app": {
