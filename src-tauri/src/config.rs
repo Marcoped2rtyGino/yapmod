@@ -14,6 +14,8 @@ pub struct FirstRun(pub bool);
 pub struct Config {
     pub use_native_titlebar: Option<bool>,
     pub start_maximized: Option<bool>,
+    #[serde(default)]
+    pub last_seen_version: Option<String>,
 }
 
 impl Default for Config {
@@ -21,6 +23,7 @@ impl Default for Config {
         Self {
             use_native_titlebar: Some(false),
             start_maximized: Some(false),
+            last_seen_version: None,
         }
     }
 }
@@ -30,24 +33,33 @@ impl Config {
         Self {
             use_native_titlebar: other.use_native_titlebar.or(self.use_native_titlebar),
             start_maximized: other.start_maximized.or(self.start_maximized),
+            last_seen_version: other.last_seen_version.or(self.last_seen_version),
         }
     }
 
-    pub fn init(app: &AppHandle) -> ConfigResult<(Self, bool)> {
+    pub fn init(
+        app: &AppHandle,
+        current_version: &str,
+    ) -> ConfigResult<(Self, bool, Option<String>)> {
         let path = config_path(app)?;
         let first_run = !path.exists();
 
-        let config = if first_run {
-            let config = Self::default();
-            config.to_file(path)?;
-            config
+        let mut config = if first_run {
+            Self::default()
         } else {
-            Self::from_file(path)?
+            Self::from_file(path.clone())?
         };
+
+        let previous_version = config.last_seen_version.clone();
+
+        if previous_version.as_deref() != Some(current_version) {
+            config.last_seen_version = Some(current_version.to_owned());
+            config.to_file(path)?;
+        }
 
         *CONFIG_CACHE.write().expect("config cache lock poisoned") = Some(config.clone());
 
-        Ok((config, first_run))
+        Ok((config, first_run, previous_version))
     }
 
     pub fn load(app: &AppHandle) -> ConfigResult<Self> {
