@@ -1,9 +1,6 @@
 use crate::config::Config;
 
-use super::{
-    assets::PREINJECT_JS,
-    release::notes_for,
-};
+use super::{assets::PREINJECT_JS, release::notes_for};
 
 pub fn preinject(
     config: &Config,
