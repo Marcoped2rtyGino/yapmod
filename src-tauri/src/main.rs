@@ -66,9 +66,7 @@ fn main() {
 
                         // The webview cannot open a second window, so external
                         // links are handed to the default browser instead.
-                        if let Err(error) = app_handle
-                            .opener()
-                            .open_url(url.as_str(), None::<&str>)
+                        if let Err(error) = app_handle.opener().open_url(url.as_str(), None::<&str>)
                         {
                             eprintln!("failed to open {url}: {error}");
                         }
