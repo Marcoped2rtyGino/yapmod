@@ -1,11 +1,22 @@
 use include_flate::flate;
 
+use crate::config::Config;
+
 flate!(static PREINJECT_JS: str from "gen/injection/preinject.js");
 flate!(static POSTINJECT_JS: str from "gen/injection/postinject.js");
 flate!(static MINIMUM_CSS: str from "assets/css/minimum.css");
 
-pub fn preinject() -> &'static str {
-    PREINJECT_JS.as_str()
+pub fn preinject(config: &Config, first_run: bool, version: &str) -> String {
+    let config = serde_json::to_string(config).expect("config must be valid JSON");
+    let version = serde_json::to_string(version).expect("version must be valid UTF-8");
+
+    format!(
+        "window.__YAPMOD_CONFIG__ = {config};\n\
+         window.__YAPMOD_FIRST_RUN__ = {first_run};\n\
+         window.__YAPMOD_VERSION__ = {version};\n\
+         {}",
+        PREINJECT_JS.as_str()
+    )
 }
 
 pub fn postinject() -> String {
