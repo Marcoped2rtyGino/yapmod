@@ -2,9 +2,25 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder, webview::PageLoadEvent};
+use tauri_plugin_opener::OpenerExt;
 
 mod config;
 mod injection;
+
+const INTERNAL_HOST: &str = "yapper.website";
+
+/// Checks whether a URL stays on Yapper, so internal windows keep the
+/// default behaviour and external ones are sent to the browser.
+fn is_internal_url(url: &tauri::Url) -> bool {
+    match url.host_str() {
+        Some(host) => {
+            let host = host.to_ascii_lowercase();
+
+            host == INTERNAL_HOST || host.ends_with(&format!(".{INTERNAL_HOST}"))
+        }
+        None => true,
+    }
+}
 
 fn main() {
     tauri::Builder::default()
@@ -40,6 +56,26 @@ fn main() {
                 .decorations(true)
                 .shadow(true)
                 .initialization_script(&preinject)
+                .on_new_window({
+                    let app_handle = app.handle().clone();
+
+                    move |url, _features| {
+                        if is_internal_url(&url) {
+                            return tauri::webview::NewWindowResponse::Allow;
+                        }
+
+                        // The webview cannot open a second window, so external
+                        // links are handed to the default browser instead.
+                        if let Err(error) = app_handle
+                            .opener()
+                            .open_url(url.as_str(), None::<&str>)
+                        {
+                            eprintln!("failed to open {url}: {error}");
+                        }
+
+                        tauri::webview::NewWindowResponse::Deny
+                    }
+                })
                 .on_page_load(|webview, payload| {
                     if payload.event() == PageLoadEvent::Finished
                         && let Err(error) = webview.eval(injection::postinject())

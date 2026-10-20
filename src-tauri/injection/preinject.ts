@@ -2,6 +2,7 @@ import { installModalApi } from "./shared/modal";
 import { installSettingsApi } from "./shared/settings";
 import { installStore } from "./shared/store";
 import { installDefaultSettings } from "./shared/defaults";
+import { installExternalLinks } from "./shared/links";
 import type { YapmodScope } from "./shared/types";
 
 const globalScope = globalThis as YapmodScope;
@@ -23,3 +24,4 @@ installModalApi(globalScope.__yapmod);
 installStore(globalScope.__yapmod);
 installSettingsApi(globalScope.__yapmod);
 installDefaultSettings(globalScope.__yapmod);
+installExternalLinks();
