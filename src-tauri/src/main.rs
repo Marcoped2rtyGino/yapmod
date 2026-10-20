@@ -29,6 +29,11 @@ fn main() {
                     }
                 });
 
+            #[cfg(target_os = "macos")]
+            let win = win
+                .hidden_title(true)
+                .title_bar_style(tauri::TitleBarStyle::Overlay);
+
             win.build()?;
 
             Ok(())
