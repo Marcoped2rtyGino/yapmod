@@ -16,6 +16,44 @@ html[data-yapmod-os="macos"] #yapmod-drag-region {
   z-index: 2147483647;
 }
 
+/* Settings sections */
+
+.settings.yapmod-section-active > .settings-main:not(.yapmod-settings-panel) {
+  display: none;
+}
+
+.yapmod-settings-panel[hidden] {
+  display: none !important;
+}
+
+.yapmod-settings-panel .yapmod-settings {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The description sits right under the title instead of inheriting the
+   blanket margin of `.hint`. */
+.yapmod-settings-panel .yapmod-settings > h2.yapmod-has-description {
+  margin-bottom: 4px;
+}
+
+.yapmod-settings-panel .yapmod-settings > .yapmod-settings-description {
+  margin: 0 0 16px;
+}
+
+.yapmod-settings-panel .yapmod-settings-items {
+  display: flex;
+  flex-direction: column;
+}
+
+.yapmod-settings-panel .yapmod-settings-items > .btn {
+  align-self: flex-start;
+}
+
+.yapmod-settings-panel .yapmod-setting {
+  margin-bottom: 12px;
+}
+
 /* Release notes modal */
 
 .yapmod-release-modal {

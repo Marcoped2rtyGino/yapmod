@@ -1,4 +1,7 @@
 import { installModalApi } from "./shared/modal";
+import { installSettingsApi } from "./shared/settings";
+import { installStore } from "./shared/store";
+import { installDefaultSettings } from "./shared/defaults";
 import type { YapmodScope } from "./shared/types";
 
 const globalScope = globalThis as YapmodScope;
@@ -6,6 +9,7 @@ const globalScope = globalThis as YapmodScope;
 globalScope.__yapmod ??= {};
 globalScope.__yapmod.preinject = true;
 globalScope.__yapmod.config = globalScope.__YAPMOD_CONFIG__;
+globalScope.__yapmod.os = globalScope.__YAPMOD_OS__;
 globalScope.__yapmod.firstRun = globalScope.__YAPMOD_FIRST_RUN__ === true;
 globalScope.__yapmod.version = globalScope.__YAPMOD_VERSION__;
 globalScope.__yapmod.release = {
@@ -16,3 +20,6 @@ globalScope.__yapmod.release = {
 };
 
 installModalApi(globalScope.__yapmod);
+installStore(globalScope.__yapmod);
+installSettingsApi(globalScope.__yapmod);
+installDefaultSettings(globalScope.__yapmod);
