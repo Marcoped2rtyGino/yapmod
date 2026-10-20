@@ -380,7 +380,23 @@ function activate(id: string): void {
     return;
   }
 
+  const previous = activeId ? registry.get(activeId) : undefined;
+
   const target = mountPanel(entry);
+
+  // Hide the panel of the section we are leaving, otherwise both panels
+  // end up side by side.
+  if (previous && previous !== entry) {
+    if (previous.panel) {
+      previous.panel.hidden = true;
+    }
+
+    try {
+      previous.section.onHide?.();
+    } catch (error) {
+      console.error("[yapmod] settings section failed to hide", error);
+    }
+  }
 
   for (const button of nav.querySelectorAll<HTMLElement>("button.active")) {
     if (button !== entry.button) {
