@@ -10,14 +10,6 @@
     "frontendDist": "https://yapper.website/"
   },
   "app": {
-    "withGlobalTauri": true,
-    "windows": [
-      {
-        "title": "yapmod",
-        "width": 800,
-        "height": 600
-      }
-    ],
     "security": {
       "csp": null
     }
