@@ -16,69 +16,133 @@ html[data-yapmod-os="macos"] #yapmod-drag-region {
   z-index: 2147483647;
 }
 
-/* First-run welcome modal */
+/* Release notes modal */
 
-.yapmod-welcome-modal {
+.yapmod-release-modal {
   overflow: hidden;
 }
 
-.yapmod-welcome-hero {
+.yapmod-release-hero {
   display: flex;
   align-items: center;
-  justify-content: center;
-  min-height: 84px;
-  padding: 12px 18px;
+  gap: 14px;
+  min-height: 76px;
+  padding: 14px 18px;
   color: #fff;
   background: linear-gradient(135deg, #f67567 0%, #ff8a70 55%, #ffb25f 100%);
 }
 
-.yapmod-welcome-logo {
-  width: min(92px, 40%);
+.yapmod-release-logo {
+  flex: none;
+  width: 46px;
   color: #fff;
   filter: drop-shadow(0 4px 10px rgba(94, 23, 16, 0.2));
 }
 
-.yapmod-welcome-logo svg {
+.yapmod-release-logo svg {
   display: block;
   width: 100%;
   height: auto;
 }
 
-.yapmod-welcome-modal .yapmod-modal-close {
+.yapmod-release-hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.yapmod-release-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.82;
+}
+
+.yapmod-release-version {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.yapmod-release-date {
+  font-size: 12px;
+  opacity: 0.82;
+}
+
+.yapmod-release-modal .yapmod-modal-close {
   color: #fff;
   background: transparent;
   opacity: 0.8;
 }
 
-.yapmod-welcome-modal .yapmod-modal-close:hover,
-.yapmod-welcome-modal .yapmod-modal-close:focus-visible {
+.yapmod-release-modal .yapmod-modal-close:hover,
+.yapmod-release-modal .yapmod-modal-close:focus-visible {
   background: rgba(77, 22, 15, 0.14);
   opacity: 1;
 }
 
-.yapmod-welcome-lead {
-  margin: 0;
+.yapmod-release-summary {
+  margin: 0 0 14px;
   color: var(--text-dim, rgba(255, 255, 255, 0.72));
   font-size: 13px;
   line-height: 1.55;
 }
 
-.yapmod-welcome-lead strong {
-  color: var(--text, #fff);
+.yapmod-release-section + .yapmod-release-section {
+  margin-top: 14px;
 }
 
-.yapmod-welcome-modal .yapmod-modal-foot {
+.yapmod-release-section h3 {
+  margin: 0 0 6px;
+  color: var(--text-dim, rgba(255, 255, 255, 0.62));
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.yapmod-release-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.yapmod-release-list li {
+  position: relative;
+  padding-left: 15px;
+  color: var(--text, #fff);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.yapmod-release-list li::before {
+  content: "";
+  position: absolute;
+  top: 0.58em;
+  left: 2px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--tint-a, #5865f2);
+}
+
+.yapmod-release-modal .yapmod-modal-foot {
   padding: 0 18px 16px;
   border-top: 0;
 }
 
 @media (max-width: 520px) {
-  .yapmod-welcome-hero {
-    min-height: 80px;
+  .yapmod-release-hero {
+    min-height: 72px;
     padding: 12px 16px;
   }
 
-  .yapmod-welcome-logo {
-    width: min(88px, 40%);
+  .yapmod-release-logo {
+    width: 42px;
   }
 }
