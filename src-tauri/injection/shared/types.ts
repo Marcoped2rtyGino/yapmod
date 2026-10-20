@@ -3,6 +3,25 @@ export type YapmodConfig = {
   start_maximized?: boolean | null;
 };
 
+export type ReleaseNotesSection = {
+  heading?: string;
+  items: string[];
+};
+
+export type ReleaseNotes = {
+  title?: string;
+  date?: string;
+  summary?: string;
+  sections?: ReleaseNotesSection[];
+};
+
+export type ReleaseInfo = {
+  version: string;
+  previousVersion: string | null;
+  firstRun: boolean;
+  notes: ReleaseNotes | null;
+};
+
 export type ModalSize = "sm" | "md" | "lg" | "xl";
 
 export type ModalCloseReason =
@@ -79,6 +98,7 @@ export type YapmodGlobal = {
   config?: YapmodConfig;
   firstRun?: boolean;
   version?: string;
+  release?: ReleaseInfo;
   applyCss?: (css: string) => void;
   modal?: YapmodModalApi;
   createModal?: (options?: ModalOptions) => YapmodModal;
@@ -90,4 +110,6 @@ export type YapmodScope = typeof globalThis & {
   __YAPMOD_CONFIG__?: YapmodConfig;
   __YAPMOD_FIRST_RUN__?: boolean;
   __YAPMOD_VERSION__?: string;
+  __YAPMOD_PREVIOUS_VERSION__?: string | null;
+  __YAPMOD_RELEASE_NOTES__?: ReleaseNotes | null;
 };

@@ -5,6 +5,13 @@ use crate::config::Config;
 flate!(static PREINJECT_JS: str from "gen/injection/preinject.js");
 flate!(static POSTINJECT_JS: str from "gen/injection/postinject.js");
 flate!(static MINIMUM_CSS: str from "assets/css/minimum.css");
+flate!(static RELEASE_NOTES_JSON: str from "assets/release-notes.json");
+
+fn release_notes(version: &str) -> Option<serde_json::Value> {
+    let notes: serde_json::Value = serde_json::from_str(RELEASE_NOTES_JSON.as_str()).ok()?;
+
+    notes.get(version).cloned()
+}
 
 pub fn preinject(
     config: &Config,
@@ -13,6 +20,7 @@ pub fn preinject(
     previous_version: Option<&str>,
 ) -> String {
     let config = serde_json::to_string(config).expect("config must be valid JSON");
+    let notes = serde_json::to_string(&release_notes(version)).expect("notes must be valid JSON");
     let version = serde_json::to_string(version).expect("version must be valid UTF-8");
     let previous_version =
         serde_json::to_string(&previous_version).expect("version must be valid UTF-8");
@@ -22,6 +30,7 @@ pub fn preinject(
          window.__YAPMOD_FIRST_RUN__ = {first_run};\n\
          window.__YAPMOD_VERSION__ = {version};\n\
          window.__YAPMOD_PREVIOUS_VERSION__ = {previous_version};\n\
+         window.__YAPMOD_RELEASE_NOTES__ = {notes};\n\
          {}",
         PREINJECT_JS.as_str()
     )
