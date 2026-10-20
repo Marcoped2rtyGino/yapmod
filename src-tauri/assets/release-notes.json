@@ -1,0 +1,54 @@
+{
+  "0.1.0": {
+    "title": "The first yapmod release",
+    "date": "2026-10-20",
+    "summary": "yapmod is a modded desktop client for Yapper. This first release focuses on the basics: a real desktop window, a proper titlebar, and a place to grow from.",
+    "sections": [
+      {
+        "heading": "Highlights",
+        "items": [
+          "Yapper now runs in its own desktop window.",
+          "Added a custom macOS titlebar overlay.",
+          "Introduced the yapmod logo and desktop icons."
+        ]
+      }
+    ]
+  },
+  "0.1.1": {
+    "title": "Modals and configuration",
+    "date": "2026-10-20",
+    "summary": "This release adds the building blocks for customizing yapmod and showing dialogs over the Yapper interface.",
+    "sections": [
+      {
+        "heading": "New",
+        "items": [
+          "Added a reusable modal API for injected scripts.",
+          "Added a welcome modal shown on the first launch.",
+          "Added a config file with options for the native titlebar and starting maximized."
+        ]
+      }
+    ]
+  },
+  "0.1.2": {
+    "title": "A smoother first launch",
+    "date": "2026-10-20",
+    "summary": "A small release focused on fixing rough edges and making the app easier to install and use.",
+    "sections": [
+      {
+        "heading": "Fixed",
+        "items": [
+          "macOS builds are now ad-hoc signed, so the app opens without a damaged app warning.",
+          "The login screen now opens when you are not signed in.",
+          "Improved the README and release workflow."
+        ]
+      },
+      {
+        "heading": "New",
+        "items": [
+          "Release notes now appear after an update, so you can see what changed.",
+          "The version you last ran is saved in your config file."
+        ]
+      }
+    ]
+  }
+}
