@@ -1,11 +1,8 @@
-use include_flate::flate;
+mod assets;
 
 use crate::config::Config;
 
-flate!(static PREINJECT_JS: str from "gen/injection/preinject.js");
-flate!(static POSTINJECT_JS: str from "gen/injection/postinject.js");
-flate!(static MINIMUM_CSS: str from "assets/css/minimum.css");
-flate!(static RELEASE_NOTES_JSON: str from "assets/release-notes.json");
+use assets::{MINIMUM_CSS, POSTINJECT_JS, PREINJECT_JS, RELEASE_NOTES_JSON};
 
 fn release_notes(version: &str) -> Option<serde_json::Value> {
     let notes: serde_json::Value = serde_json::from_str(RELEASE_NOTES_JSON.as_str()).ok()?;
