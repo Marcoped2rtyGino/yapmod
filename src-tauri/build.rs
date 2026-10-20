@@ -8,7 +8,15 @@ fn main() {
 
     ensure_injection_bundles(&manifest_dir.join("gen").join("injection"));
 
-    tauri_build::build()
+    // The webview runs on a remote origin (yapper.website), so every command
+    // the injected code calls has to be part of the app ACL. Without this
+    // manifest the runtime rejects them with "not allowed by ACL".
+    tauri_build::try_build(
+        tauri_build::Attributes::new().app_manifest(
+            tauri_build::AppManifest::new().commands(&["set_settings", "get_setting"]),
+        ),
+    )
+    .expect("failed to run tauri-build");
 }
 
 fn ensure_injection_bundles(dir: &Path) {

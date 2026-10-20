@@ -13,6 +13,8 @@ fn main() {
             config::is_first_run,
             config::get_config,
             config::set_config,
+            config::set_settings,
+            config::get_setting,
             config::read_config_file,
             config::write_config_file,
             config::default_config,
@@ -32,7 +34,7 @@ fn main() {
                 .inner_size(800.0, 600.0)
                 .resizable(true)
                 .min_inner_size(800.0, 600.0)
-                .maximized(config.start_maximized.unwrap_or(false))
+                .maximized(config.setting_bool("start_maximized").unwrap_or(false))
                 .disable_drag_drop_handler()
                 .zoom_hotkeys_enabled(true)
                 .decorations(true)
@@ -47,7 +49,7 @@ fn main() {
                 });
 
             #[cfg(target_os = "macos")]
-            let win = if config.use_native_titlebar.unwrap_or(false) {
+            let win = if config.setting_bool("use_native_titlebar").unwrap_or(false) {
                 win
             } else {
                 win.hidden_title(true)

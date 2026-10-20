@@ -6,7 +6,9 @@
   "permissions": [
     "core:default",
     "core:window:allow-start-dragging",
-    "opener:default"
+    "opener:default",
+    "allow-set-settings",
+    "allow-get-setting"
   ],
   "remote": {
     "urls": ["https://yapper.website", "https://*.yapper.website"]
