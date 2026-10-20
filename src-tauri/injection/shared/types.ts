@@ -41,7 +41,10 @@ export type ModalContent =
 
 export type ModalButton = {
   label: string;
-  variant?: "primary" | "secondary" | "danger";
+  /**
+   * "native" keeps the button exactly as the host app styles it.
+   */
+  variant?: "primary" | "secondary" | "danger" | "native";
   className?: string;
   disabled?: boolean;
   autofocus?: boolean;
@@ -65,6 +68,13 @@ export type ModalOptions = {
   closeOnBackdrop?: boolean;
   closeOnEscape?: boolean;
   lockScroll?: boolean;
+  /**
+   * Moves the keyboard focus into the dialog when it opens.
+   *
+   * Off by default, so a modal never steals the focus from the page. A button
+   * marked with `autofocus` still opts in to being focused.
+   */
+  autoFocus?: boolean;
   onOpen?: (modal: YapmodModal) => void;
   onClose?: (modal: YapmodModal, reason: ModalCloseReason) => void;
 };

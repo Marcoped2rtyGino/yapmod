@@ -1,6 +1,7 @@
 import logoSvg from "../../assets/icon.svg";
-import type { ReleaseInfo, YapmodScope } from "./shared/types";
+import type { ReleaseInfo, YapmodModal, YapmodScope } from "./shared/types";
 import { createReleaseSection, formatReleaseDate } from "./shared/release";
+import { checkForUpdate, showUpdateAvailableModal } from "./shared/update";
 import { upsertStyle } from "./shared/ui";
 
 const STYLE_ELEMENT_ID = "yapmod-injected-styles";
@@ -118,11 +119,11 @@ function shouldShowRelease(release: ReleaseInfo): boolean {
   return true;
 }
 
-function showReleaseModal(release: ReleaseInfo): void {
+function showReleaseModal(release: ReleaseInfo): YapmodModal | null {
   const yapmod = globalScope.__yapmod;
 
   if (!shouldShowRelease(release) || !yapmod?.showModal) {
-    return;
+    return null;
   }
 
   const modal = yapmod.showModal({
@@ -147,53 +148,104 @@ function showReleaseModal(release: ReleaseInfo): void {
   try {
     sessionStorage.setItem(`${RELEASE_SEEN_KEY}:${release.version}`, "1");
   } catch {}
+
+  return modal;
 }
 
-function scheduleReleaseModal(): void {
+function scheduleReleaseModal(): Promise<void> {
   const release = globalScope.__yapmod?.release;
 
   if (!release || !globalScope.__yapmod?.showModal || !shouldShowRelease(release)) {
-    return;
+    return Promise.resolve();
   }
 
-  const appMounted = (): boolean =>
-    document.querySelector(".app, .auth-wrap, main") !== null;
+  return new Promise<void>((resolve) => {
+    const show = (): void => {
+      let modal: YapmodModal | null = null;
 
-  const show = (): void => {
-    try {
-      showReleaseModal(release);
-    } catch (error) {
-      console.error("[yapmod] failed to show the release notes modal", error);
-    }
-  };
+      try {
+        modal = showReleaseModal(release);
+      } catch (error) {
+        console.error("[yapmod] failed to show the release notes modal", error);
+      }
 
-  if (appMounted()) {
-    window.setTimeout(show, 200);
-    return;
-  }
+      if (!modal) {
+        resolve();
+        return;
+      }
 
-  const observer = new MutationObserver(() => {
-    if (!appMounted()) {
+      void modal.closed.then(
+        () => resolve(),
+        () => resolve(),
+      );
+    };
+
+    const appMounted = (): boolean =>
+      document.querySelector(".app, .auth-wrap, main") !== null;
+
+    if (appMounted()) {
+      window.setTimeout(show, 200);
       return;
     }
 
-    observer.disconnect();
-    window.setTimeout(show, 200);
-  });
+    const observer = new MutationObserver(() => {
+      if (!appMounted()) {
+        return;
+      }
 
-  observer.observe(document.documentElement, {
-    childList: true,
-    subtree: true,
-  });
+      observer.disconnect();
+      window.setTimeout(show, 200);
+    });
 
-  window.setTimeout(() => {
-    observer.disconnect();
-    show();
-  }, 8000);
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+
+    window.setTimeout(() => {
+      observer.disconnect();
+      show();
+    }, 8000);
+  });
+}
+
+/**
+ * Looks for a newer yapmod version and shows the update modal when there is
+ * one.
+ *
+ * yapmod never updates itself, so the modal only points the user to the
+ * website. The check runs right away, but the modal waits for the release
+ * notes, so the two never stack up.
+ */
+async function scheduleUpdateModal(releaseDone: Promise<void>): Promise<void> {
+  const yapmod = globalScope.__yapmod;
+
+  if (!yapmod?.showModal) {
+    return;
+  }
+
+  if (yapmod.store?.get<boolean>("auto_update", true) === false) {
+    return;
+  }
+
+  const info = await checkForUpdate();
+
+  if (!info?.available) {
+    return;
+  }
+
+  await releaseDone;
+
+  try {
+    showUpdateAvailableModal(yapmod, info);
+  } catch (error) {
+    console.error("[yapmod] failed to show the update modal", error);
+  }
 }
 
 ensureDragRegion();
 
 globalScope.__yapmod ??= {};
 globalScope.__yapmod.applyCss = applyCss;
-scheduleReleaseModal();
+
+void scheduleUpdateModal(scheduleReleaseModal());

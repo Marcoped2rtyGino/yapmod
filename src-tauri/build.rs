@@ -13,7 +13,11 @@ fn main() {
     // manifest the runtime rejects them with "not allowed by ACL".
     tauri_build::try_build(
         tauri_build::Attributes::new().app_manifest(
-            tauri_build::AppManifest::new().commands(&["set_settings", "get_setting"]),
+            tauri_build::AppManifest::new().commands(&[
+                "set_settings",
+                "get_setting",
+                "check_for_update",
+            ]),
         ),
     )
     .expect("failed to run tauri-build");

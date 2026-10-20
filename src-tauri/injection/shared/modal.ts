@@ -160,6 +160,8 @@ class YapmodModalImpl implements YapmodModal {
   private readonly dismissible: boolean;
   private readonly closeOnBackdrop: boolean;
   private readonly closeOnEscape: boolean;
+  private readonly autoFocus: boolean;
+  private hasAutofocusButton = false;
   private previousFocus: HTMLElement | null = null;
 
   private headElement: HTMLElement | null = null;
@@ -179,6 +181,7 @@ class YapmodModalImpl implements YapmodModal {
     this.dismissible = options.dismissible !== false;
     this.closeOnBackdrop = options.closeOnBackdrop ?? this.dismissible;
     this.closeOnEscape = options.closeOnEscape ?? this.dismissible;
+    this.autoFocus = options.autoFocus === true;
 
     this.closed = new Promise((resolve) => {
       this.closedResolve = resolve;
@@ -252,10 +255,13 @@ class YapmodModalImpl implements YapmodModal {
     }
 
     this.openState = true;
-    this.previousFocus =
-      document.activeElement instanceof HTMLElement
+
+    // The focus is left where it is unless the modal explicitly asks for it.
+    this.previousFocus = this.shouldFocus()
+      ? document.activeElement instanceof HTMLElement
         ? document.activeElement
-        : null;
+        : null
+      : null;
 
     this.element.hidden = false;
     this.mount();
@@ -391,6 +397,7 @@ class YapmodModalImpl implements YapmodModal {
       "btn",
       button.variant === "secondary" ? "secondary" : "",
       button.variant === "danger" ? "yapmod-modal-danger" : "",
+      // "native" keeps the styles of the host app, without our own tint.
       button.variant === "primary" || !button.variant
         ? "yapmod-modal-primary"
         : "",
@@ -403,6 +410,7 @@ class YapmodModalImpl implements YapmodModal {
 
     if (button.autofocus) {
       element.dataset.yapmodAutofocus = "";
+      this.hasAutofocusButton = true;
     }
 
     element.addEventListener("click", () => {
@@ -527,7 +535,7 @@ class YapmodModalImpl implements YapmodModal {
   }
 
   private focusInitial(): void {
-    if (!this.mounted) {
+    if (!this.mounted || !this.shouldFocus()) {
       return;
     }
 
@@ -561,6 +569,10 @@ class YapmodModalImpl implements YapmodModal {
     return Array.from(
       this.dialog.querySelectorAll<HTMLElement>(selector),
     ).filter((element) => element.getClientRects().length > 0);
+  }
+
+  private shouldFocus(): boolean {
+    return this.autoFocus || this.hasAutofocusButton;
   }
 
   private trapFocus(event: KeyboardEvent): void {
@@ -647,7 +659,7 @@ class YapmodModalImpl implements YapmodModal {
       return;
     }
 
-    if (event.key === "Tab") {
+    if (event.key === "Tab" && this.shouldFocus()) {
       this.trapFocus(event);
     }
   };

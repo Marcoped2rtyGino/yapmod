@@ -6,6 +6,7 @@ use tauri_plugin_opener::OpenerExt;
 
 mod config;
 mod injection;
+mod update;
 
 const INTERNAL_HOST: &str = "yapper.website";
 
@@ -34,6 +35,7 @@ fn main() {
             config::read_config_file,
             config::write_config_file,
             config::default_config,
+            update::check_for_update,
         ])
         .setup(|app| {
             let version = app.package_info().version.to_string();

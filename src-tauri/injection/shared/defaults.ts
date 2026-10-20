@@ -149,6 +149,13 @@ export function installDefaultSettings(yapmod: YapmodGlobal): void {
       description: "Open yapmod maximized. Takes effect after a restart.",
       fallback: false,
     }),
+    createToggle(yapmod, {
+      id: "auto_update",
+      label: "Check for updates automatically",
+      description:
+        "Look for new yapmod versions when the app starts and show the update window.",
+      fallback: true,
+    }),
   );
 
   const section: SettingsSection = {

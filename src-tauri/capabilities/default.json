@@ -8,7 +8,8 @@
     "core:window:allow-start-dragging",
     "opener:default",
     "allow-set-settings",
-    "allow-get-setting"
+    "allow-get-setting",
+    "allow-check-for-update"
   ],
   "remote": {
     "urls": ["https://yapper.website", "https://*.yapper.website"]

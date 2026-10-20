@@ -71,7 +71,7 @@ export function createReleaseBody(notes: ReleaseNotes | null): HTMLElement {
   return body;
 }
 
-function compareVersions(left: string, right: string): number {
+export function compareVersions(left: string, right: string): number {
   const parse = (version: string): number[] =>
     version
       .split(/[.-]/)
