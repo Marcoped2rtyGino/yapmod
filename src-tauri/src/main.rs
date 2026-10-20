@@ -21,7 +21,7 @@ fn main() {
             let (config, first_run) = config::Config::init(app.handle())?;
             app.manage(config::FirstRun(first_run));
 
-            let url = WebviewUrl::External("https://www.yapper.website/".parse()?);
+            let url = WebviewUrl::External("https://www.yapper.website/?auth=in".parse()?);
             let title = format!("Yapmod - v{}", app.package_info().version);
             let version = app.package_info().version.to_string();
             let preinject = injection::preinject(&config, first_run, &version);
