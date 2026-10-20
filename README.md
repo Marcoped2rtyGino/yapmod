@@ -1,7 +1,22 @@
-# Tauri + Vanilla TS
+<p align="center">
+  <img src="assets/icon.svg" alt="yapmod logo" width="180" />
+</p>
 
-This template should help get you started developing with Tauri in vanilla HTML, CSS and Typescript.
+<h1 align="center">yapmod</h1>
 
-## Recommended IDE Setup
+<p align="center">
+  An open-source, modded desktop client for <a href="https://yapper.website">Yapper</a>, built with Tauri.
+</p>
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+> [!WARNING]
+> **yapmod is in early development.** Expect missing features, rough edges, and breaking changes.
+
+## Status
+
+- **Early development**: the project is still in its early stages and is not production-ready.
+- **No plugins, themes, or similar features yet**
+- **Actively developed**: I am actively working on yapmod, and contributions are welcome.
+
+## Contributing
+
+Contributions are welcome. Since the project is early in development, please open an issue to discuss larger changes before starting work, and keep pull requests focused and consistent with the existing code.
