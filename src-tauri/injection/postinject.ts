@@ -1,10 +1,6 @@
 import logoSvg from "../../assets/icon.svg";
-import type {
-  ReleaseInfo,
-  ReleaseNotes,
-  ReleaseNotesSection,
-  YapmodScope,
-} from "./shared/types";
+import type { ReleaseInfo, YapmodScope } from "./shared/types";
+import { createReleaseSection, formatReleaseDate } from "./shared/release";
 import { upsertStyle } from "./shared/ui";
 
 const STYLE_ELEMENT_ID = "yapmod-injected-styles";
@@ -30,23 +26,6 @@ function ensureDragRegion(): void {
   region.id = DRAG_REGION_ID;
   region.setAttribute("data-tauri-drag-region", "");
   document.body.appendChild(region);
-}
-
-function formatReleaseDate(date: string | undefined): string | null {
-  if (!date) {
-    return null;
-  }
-
-  const parsed = new Date(`${date}T00:00:00`);
-  if (Number.isNaN(parsed.getTime())) {
-    return date;
-  }
-
-  return parsed.toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
 }
 
 function createReleaseHero(release: ReleaseInfo): HTMLElement {
@@ -84,35 +63,11 @@ function createReleaseHero(release: ReleaseInfo): HTMLElement {
   return hero;
 }
 
-function createReleaseSection(section: ReleaseNotesSection): HTMLElement {
-  const container = document.createElement("section");
-  container.className = "yapmod-release-section";
-
-  if (section.heading) {
-    const heading = document.createElement("h3");
-    heading.textContent = section.heading;
-    container.appendChild(heading);
-  }
-
-  const list = document.createElement("ul");
-  list.className = "yapmod-release-list";
-
-  for (const item of section.items ?? []) {
-    const entry = document.createElement("li");
-    entry.textContent = item;
-    list.appendChild(entry);
-  }
-
-  container.appendChild(list);
-
-  return container;
-}
-
 function createReleaseContent(release: ReleaseInfo): HTMLElement {
   const content = document.createElement("div");
   content.className = "yapmod-release-body";
 
-  const notes: ReleaseNotes = release.notes ?? {};
+  const notes = release.notes ?? {};
   const summary =
     notes.summary ??
     (release.firstRun

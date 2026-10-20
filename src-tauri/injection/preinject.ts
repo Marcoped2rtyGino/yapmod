@@ -20,6 +20,8 @@ globalScope.__yapmod.release = {
   notes: globalScope.__YAPMOD_RELEASE_NOTES__ ?? null,
 };
 
+globalScope.__yapmod.changelog = globalScope.__YAPMOD_ALL_RELEASE_NOTES__ ?? {};
+
 installModalApi(globalScope.__yapmod);
 installStore(globalScope.__yapmod);
 installSettingsApi(globalScope.__yapmod);

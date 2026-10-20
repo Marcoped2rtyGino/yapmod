@@ -1,6 +1,6 @@
 use crate::config::Config;
 
-use super::{assets::PREINJECT_JS, release::notes_for};
+use super::{assets::PREINJECT_JS, release::changelog, release::notes_for};
 
 pub fn preinject(
     config: &Config,
@@ -10,6 +10,7 @@ pub fn preinject(
 ) -> String {
     let config = serde_json::to_string(config).expect("config must be valid JSON");
     let notes = serde_json::to_string(&notes_for(version)).expect("notes must be valid JSON");
+    let changelog = serde_json::to_string(&changelog()).expect("changelog must be valid JSON");
     let version = serde_json::to_string(version).expect("version must be valid UTF-8");
     let previous_version =
         serde_json::to_string(&previous_version).expect("version must be valid UTF-8");
@@ -22,6 +23,7 @@ pub fn preinject(
          window.__YAPMOD_VERSION__ = {version};\n\
          window.__YAPMOD_PREVIOUS_VERSION__ = {previous_version};\n\
          window.__YAPMOD_RELEASE_NOTES__ = {notes};\n\
+         window.__YAPMOD_ALL_RELEASE_NOTES__ = {changelog};\n\
          {}",
         PREINJECT_JS.as_str()
     )

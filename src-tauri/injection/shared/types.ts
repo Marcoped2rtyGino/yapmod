@@ -204,6 +204,7 @@ export type YapmodGlobal = {
   firstRun?: boolean;
   version?: string;
   release?: ReleaseInfo;
+  changelog?: Record<string, ReleaseNotes>;
   applyCss?: (css: string) => void;
   modal?: YapmodModalApi;
   createModal?: (options?: ModalOptions) => YapmodModal;
@@ -220,4 +221,5 @@ export type YapmodScope = typeof globalThis & {
   __YAPMOD_VERSION__?: string;
   __YAPMOD_PREVIOUS_VERSION__?: string | null;
   __YAPMOD_RELEASE_NOTES__?: ReleaseNotes | null;
+  __YAPMOD_ALL_RELEASE_NOTES__?: Record<string, ReleaseNotes> | null;
 };
