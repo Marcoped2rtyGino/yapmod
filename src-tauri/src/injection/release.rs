@@ -11,6 +11,10 @@ pub fn notes_for(version: &str) -> Option<Value> {
 }
 
 /// Every release, keyed by version, so the changelog can list all of them.
-pub fn changelog() -> Value {
+///
+/// The list is fetched on demand, so it is not shipped with every page
+/// load.
+#[tauri::command]
+pub fn get_changelog() -> Value {
     all_notes()
 }

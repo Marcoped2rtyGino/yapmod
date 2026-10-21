@@ -1,5 +1,24 @@
 import type { ReleaseNotes, ReleaseNotesSection } from "./types";
 import { createElement } from "./ui";
+import { invokeCommand } from "./tauri";
+
+let changelogCache: Record<string, ReleaseNotes> | null = null;
+
+/**
+ * Every release, keyed by version.
+ *
+ * The list is fetched on demand and kept around, so it is not shipped with
+ * every page load.
+ */
+export async function getChangelog(): Promise<Record<string, ReleaseNotes>> {
+  if (!changelogCache) {
+    changelogCache = await invokeCommand<Record<string, ReleaseNotes>>(
+      "get_changelog",
+    );
+  }
+
+  return changelogCache;
+}
 
 /**
  * Formats an ISO date (YYYY-MM-DD) as a human readable date.

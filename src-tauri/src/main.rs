@@ -36,6 +36,7 @@ fn main() {
             config::write_config_file,
             config::default_config,
             update::check_for_update,
+            injection::release::get_changelog,
         ])
         .setup(|app| {
             let version = app.package_info().version.to_string();

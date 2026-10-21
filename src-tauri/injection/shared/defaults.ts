@@ -1,10 +1,12 @@
 import type {
+  ReleaseNotes,
   SettingsItem,
   SettingsSection,
 } from "./types";
 import {
   createReleaseBody,
   createReleaseHeader,
+  getChangelog,
   sortReleases,
 } from "./release";
 import { createElement } from "./ui";
@@ -52,12 +54,65 @@ function createToggle(
 }
 
 /**
+ * Renders one entry per release, newest first.
+ */
+function renderChangelog(
+  host: HTMLElement,
+  releases: Array<{ version: string; notes: ReleaseNotes }>,
+  installedVersion: string | undefined,
+): void {
+  if (releases.length === 0) {
+    host.appendChild(
+      createElement("p", {
+        className: "yapmod-changelog-empty",
+        text: "No releases yet.",
+      }),
+    );
+    return;
+  }
+
+  for (const release of releases) {
+    const entryChildren: Node[] = [
+      createReleaseHeader(release, {
+        tag: "header",
+        className: "yapmod-changelog-header",
+        versionClassName: "yapmod-changelog-version",
+        dateClassName: "yapmod-changelog-date",
+        current: release.version === installedVersion,
+        currentClassName: "yapmod-changelog-current",
+      }),
+    ];
+
+    const title = release.notes?.title;
+
+    if (title) {
+      entryChildren.push(
+        createElement("h3", {
+          className: "yapmod-changelog-title",
+          text: title,
+        }),
+      );
+    }
+
+    entryChildren.push(createReleaseBody(release.notes));
+
+    host.appendChild(
+      createElement("article", {
+        className: "yapmod-changelog-release",
+        children: entryChildren,
+      }),
+    );
+  }
+}
+
+/**
  * Builds the section that shows the full changelog, one entry per release.
+ *
+ * The list is fetched when the section is opened, so it never travels with
+ * the page.
  */
 function createChangelogSection(): SettingsSection {
-  const yapmod = getYapmod();
-  const releases = sortReleases(yapmod.changelog ?? {});
-  const installedVersion = yapmod.release?.version;
+  const installedVersion = getYapmod().release?.version;
 
   return {
     id: CHANGELOG_SECTION_ID,
@@ -66,48 +121,21 @@ function createChangelogSection(): SettingsSection {
     order: 1,
     description: "Every yapmod release, newest first.",
     render: (host) => {
-      if (releases.length === 0) {
-        host.appendChild(
-          createElement("p", {
-            className: "yapmod-changelog-empty",
-            text: "No releases yet.",
-          }),
-        );
-        return;
-      }
+      let cancelled = false;
 
-      for (const release of releases) {
-        const entryChildren: Node[] = [
-          createReleaseHeader(release, {
-            tag: "header",
-            className: "yapmod-changelog-header",
-            versionClassName: "yapmod-changelog-version",
-            dateClassName: "yapmod-changelog-date",
-            current: release.version === installedVersion,
-            currentClassName: "yapmod-changelog-current",
-          }),
-        ];
+      void getChangelog()
+        .then((changelog) => {
+          if (!cancelled) {
+            renderChangelog(host, sortReleases(changelog), installedVersion);
+          }
+        })
+        .catch((error: unknown) => {
+          console.error("[yapmod] could not load the changelog", error);
+        });
 
-        const title = release.notes?.title;
-
-        if (title) {
-          entryChildren.push(
-            createElement("h3", {
-              className: "yapmod-changelog-title",
-              text: title,
-            }),
-          );
-        }
-
-        entryChildren.push(createReleaseBody(release.notes));
-
-        host.appendChild(
-          createElement("article", {
-            className: "yapmod-changelog-release",
-            children: entryChildren,
-          }),
-        );
-      }
+      return () => {
+        cancelled = true;
+      };
     },
   };
 }

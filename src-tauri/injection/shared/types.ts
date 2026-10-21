@@ -207,11 +207,23 @@ export type YapmodStoreApi = {
   flush(): Promise<void>;
 };
 
+/**
+ * Everything the backend tells the injected code.
+ */
+export type YapmodPayload = {
+  config?: YapmodConfig;
+  os?: string;
+  version?: string;
+  previousVersion?: string | null;
+  firstRun?: boolean;
+  notes?: ReleaseNotes | null;
+};
+
 export type YapmodGlobal = {
   config?: YapmodConfig;
   os?: string;
   release?: ReleaseInfo;
-  changelog?: Record<string, ReleaseNotes>;
+  changelog?: () => Promise<Record<string, ReleaseNotes>>;
   applyCss?: (css: string) => void;
   modal?: YapmodModalApi;
   settings?: YapmodSettingsApi;
@@ -220,11 +232,5 @@ export type YapmodGlobal = {
 
 export type YapmodScope = typeof globalThis & {
   __yapmod?: YapmodGlobal;
-  __YAPMOD_CONFIG__?: YapmodConfig;
-  __YAPMOD_OS__?: string;
-  __YAPMOD_FIRST_RUN__?: boolean;
-  __YAPMOD_VERSION__?: string;
-  __YAPMOD_PREVIOUS_VERSION__?: string | null;
-  __YAPMOD_RELEASE_NOTES__?: ReleaseNotes | null;
-  __YAPMOD_ALL_RELEASE_NOTES__?: Record<string, ReleaseNotes> | null;
+  __YAPMOD__?: YapmodPayload;
 };

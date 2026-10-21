@@ -17,6 +17,7 @@ fn main() {
                 "set_settings",
                 "get_setting",
                 "check_for_update",
+                "get_changelog",
             ]),
         ),
     )

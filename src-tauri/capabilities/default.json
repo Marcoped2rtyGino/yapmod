@@ -9,7 +9,8 @@
     "opener:default",
     "allow-set-settings",
     "allow-get-setting",
-    "allow-check-for-update"
+    "allow-check-for-update",
+    "allow-get-changelog"
   ],
   "remote": {
     "urls": ["https://yapper.website", "https://*.yapper.website"]
