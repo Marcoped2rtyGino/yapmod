@@ -115,11 +115,10 @@ function ensurePanel(entry: SectionEntry): HTMLElement {
 
   const body = createElement("div", { className: "yapmod-settings" });
 
-  const title = createElement("h2", { text: entry.section.label });
-
-  if (entry.section.description) {
-    title.classList.add("yapmod-has-description");
-  }
+  const title = createElement("h2", {
+    className: entry.section.description ? "yapmod-has-description" : undefined,
+    text: entry.section.label,
+  });
 
   body.append(title);
 

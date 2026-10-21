@@ -8,6 +8,7 @@ import {
   formatReleaseDate,
   sortReleases,
 } from "./release";
+import { createElement } from "./ui";
 
 const SECTION_ID = "yapmod";
 const CHANGELOG_SECTION_ID = "yapmod-changelog";
@@ -65,55 +66,69 @@ function createChangelogSection(yapmod: YapmodGlobal): SettingsSection {
     description: "Every yapmod release, newest first.",
     render: (host) => {
       if (releases.length === 0) {
-        const empty = document.createElement("p");
-        empty.className = "yapmod-changelog-empty";
-        empty.textContent = "No releases yet.";
-        host.appendChild(empty);
+        host.appendChild(
+          createElement("p", {
+            className: "yapmod-changelog-empty",
+            text: "No releases yet.",
+          }),
+        );
         return;
       }
 
       for (const release of releases) {
-        const entry = document.createElement("article");
-        entry.className = "yapmod-changelog-release";
-
-        const header = document.createElement("header");
-        header.className = "yapmod-changelog-header";
-
-        const version = document.createElement("span");
-        version.className = "yapmod-changelog-version";
-        version.textContent = `v${release.version}`;
-        header.appendChild(version);
+        const headerChildren: Node[] = [
+          createElement("span", {
+            className: "yapmod-changelog-version",
+            text: `v${release.version}`,
+          }),
+        ];
 
         const date = formatReleaseDate(release.notes?.date);
 
         if (date) {
-          const dateElement = document.createElement("span");
-          dateElement.className = "yapmod-changelog-date";
-          dateElement.textContent = date;
-          header.appendChild(dateElement);
+          headerChildren.push(
+            createElement("span", {
+              className: "yapmod-changelog-date",
+              text: date,
+            }),
+          );
         }
 
         if (release.version === yapmod.version) {
-          const current = document.createElement("span");
-          current.className = "yapmod-changelog-current";
-          current.textContent = "Installed";
-          header.appendChild(current);
+          headerChildren.push(
+            createElement("span", {
+              className: "yapmod-changelog-current",
+              text: "Installed",
+            }),
+          );
         }
 
-        entry.appendChild(header);
+        const entryChildren: Node[] = [
+          createElement("header", {
+            className: "yapmod-changelog-header",
+            children: headerChildren,
+          }),
+        ];
 
         const title = release.notes?.title;
 
         if (title) {
-          const titleElement = document.createElement("h3");
-          titleElement.className = "yapmod-changelog-title";
-          titleElement.textContent = title;
-          entry.appendChild(titleElement);
+          entryChildren.push(
+            createElement("h3", {
+              className: "yapmod-changelog-title",
+              text: title,
+            }),
+          );
         }
 
-        entry.appendChild(createReleaseBody(release.notes));
+        entryChildren.push(createReleaseBody(release.notes));
 
-        host.appendChild(entry);
+        host.appendChild(
+          createElement("article", {
+            className: "yapmod-changelog-release",
+            children: entryChildren,
+          }),
+        );
       }
     },
   };

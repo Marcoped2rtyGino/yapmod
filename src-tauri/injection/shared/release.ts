@@ -1,4 +1,5 @@
 import type { ReleaseNotes, ReleaseNotesSection } from "./types";
+import { createElement } from "./ui";
 
 /**
  * Formats an ISO date (YYYY-MM-DD) as a human readable date.
@@ -25,50 +26,51 @@ export function formatReleaseDate(date: string | undefined): string | null {
  * Renders one "Highlights"/"New"/"Fixed" block of a release.
  */
 export function createReleaseSection(section: ReleaseNotesSection): HTMLElement {
-  const container = document.createElement("section");
-  container.className = "yapmod-release-section";
+  const items = (section.items ?? []).map((item) =>
+    createElement("li", { text: item }),
+  );
+
+  const list = createElement("ul", {
+    className: "yapmod-release-list",
+    children: items,
+  });
+
+  const children: Node[] = [list];
 
   if (section.heading) {
-    const heading = document.createElement("h3");
-    heading.textContent = section.heading;
-    container.appendChild(heading);
+    children.unshift(createElement("h3", { text: section.heading }));
   }
 
-  const list = document.createElement("ul");
-  list.className = "yapmod-release-list";
-
-  for (const item of section.items ?? []) {
-    const entry = document.createElement("li");
-    entry.textContent = item;
-    list.appendChild(entry);
-  }
-
-  container.appendChild(list);
-
-  return container;
+  return createElement("section", {
+    className: "yapmod-release-section",
+    children,
+  });
 }
 
 /**
  * Renders the summary and the sections of a release.
  */
 export function createReleaseBody(notes: ReleaseNotes | null): HTMLElement {
-  const body = document.createElement("div");
-  body.className = "yapmod-release-body";
-
   const releaseNotes: ReleaseNotes = notes ?? {};
+  const children: Node[] = [];
 
   if (releaseNotes.summary) {
-    const summary = document.createElement("p");
-    summary.className = "yapmod-release-summary";
-    summary.textContent = releaseNotes.summary;
-    body.appendChild(summary);
+    children.push(
+      createElement("p", {
+        className: "yapmod-release-summary",
+        text: releaseNotes.summary,
+      }),
+    );
   }
 
   for (const section of releaseNotes.sections ?? []) {
-    body.appendChild(createReleaseSection(section));
+    children.push(createReleaseSection(section));
   }
 
-  return body;
+  return createElement("div", {
+    className: "yapmod-release-body",
+    children,
+  });
 }
 
 export function compareVersions(left: string, right: string): number {

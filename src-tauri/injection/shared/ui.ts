@@ -27,17 +27,36 @@ export function ensureStyle(id: string, css: string): void {
   }
 }
 
-export type ElementOptions = {
+/**
+ * The DOM events an element can listen to.
+ */
+export type ElementEvents = {
+  [E in keyof HTMLElementEventMap]?: (event: HTMLElementEventMap[E]) => void;
+};
+
+/**
+ * Everything an element can be built with.
+ *
+ * `attrs` holds attributes, `props` holds DOM properties, so the caller
+ * never has to reach for the node after it was created.
+ */
+export type ElementOptions<
+  K extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNameMap,
+> = {
   className?: string;
   text?: string;
+  html?: string;
   attrs?: Record<string, string>;
+  dataset?: Record<string, string>;
+  props?: Partial<NoInfer<HTMLElementTagNameMap[K]>>;
+  on?: ElementEvents;
   children?: Node[];
 };
 
 /** Small DOM builder so feature code never needs a framework. */
 export function createElement<K extends keyof HTMLElementTagNameMap>(
   tag: K,
-  options: ElementOptions = {},
+  options: ElementOptions<K> = {},
 ): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
 
@@ -49,9 +68,39 @@ export function createElement<K extends keyof HTMLElementTagNameMap>(
     node.textContent = options.text;
   }
 
+  if (options.html != null) {
+    node.innerHTML = options.html;
+  }
+
   if (options.attrs) {
     for (const [name, value] of Object.entries(options.attrs)) {
-      node.setAttribute(name, value);
+      if (value !== undefined) {
+        node.setAttribute(name, value);
+      }
+    }
+  }
+
+  if (options.dataset) {
+    for (const [name, value] of Object.entries(options.dataset)) {
+      if (value !== undefined) {
+        node.dataset[name] = value;
+      }
+    }
+  }
+
+  if (options.props) {
+    const target = node as unknown as Record<string, unknown>;
+
+    for (const [name, value] of Object.entries(options.props)) {
+      if (value !== undefined) {
+        target[name] = value;
+      }
+    }
+  }
+
+  if (options.on) {
+    for (const [type, listener] of Object.entries(options.on)) {
+      node.addEventListener(type, listener as EventListener);
     }
   }
 

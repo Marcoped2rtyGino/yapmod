@@ -1,6 +1,7 @@
 import type { YapmodGlobal, YapmodModal } from "./types";
 import { invokeCommand } from "./tauri";
 import { openExternally } from "./links";
+import { createElement } from "./ui";
 
 const WEBSITE_URL = "https://ilyeshdz.github.io/yapmod";
 const UPDATE_MODAL_ID = "yapmod-update-available";
@@ -36,46 +37,40 @@ function createVersionRow(
   version: string,
   className: string,
 ): HTMLElement {
-  const row = document.createElement("div");
-  row.className = `yapmod-update-version ${className}`;
-
-  const name = document.createElement("span");
-  name.className = "yapmod-update-version-label";
-  name.textContent = label;
-
-  const number = document.createElement("span");
-  number.className = "yapmod-update-version-number";
-  number.textContent = version ? `v${version}` : "unknown";
-
-  row.append(name, number);
-
-  return row;
+  return createElement("div", {
+    className: `yapmod-update-version ${className}`,
+    children: [
+      createElement("span", {
+        className: "yapmod-update-version-label",
+        text: label,
+      }),
+      createElement("span", {
+        className: "yapmod-update-version-number",
+        text: version ? `v${version}` : "unknown",
+      }),
+    ],
+  });
 }
 
 /**
  * Builds the body of the update modal: just the two versions.
  */
 export function createUpdateContent(info: UpdateInfo): HTMLElement {
-  const content = document.createElement("div");
-  content.className = "yapmod-update-content";
-
-  content.append(
-    createVersionRow(
-      "Installed",
-      info.current_version,
-      "yapmod-update-version-installed",
-    ),
-  );
-
-  content.append(
-    createVersionRow(
-      "Latest",
-      info.latest_version,
-      "yapmod-update-version-latest",
-    ),
-  );
-
-  return content;
+  return createElement("div", {
+    className: "yapmod-update-content",
+    children: [
+      createVersionRow(
+        "Installed",
+        info.current_version,
+        "yapmod-update-version-installed",
+      ),
+      createVersionRow(
+        "Latest",
+        info.latest_version,
+        "yapmod-update-version-latest",
+      ),
+    ],
+  });
 }
 
 /**

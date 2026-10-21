@@ -12,29 +12,35 @@ function createHint(text: string): HTMLElement {
 function renderToggle(
   item: Extract<SettingsItem, { type: "toggle" }>,
 ): HTMLElement {
-  const row = createElement("label", { className: "toggle-row" });
-
-  const text = createElement("div");
-  text.append(createElement("div", { className: "toggle-label", text: item.label }));
+  const textChildren: Node[] = [
+    createElement("div", { className: "toggle-label", text: item.label }),
+  ];
 
   if (item.description) {
-    text.append(createElement("div", { className: "hint", text: item.description }));
+    textChildren.push(
+      createElement("div", { className: "hint", text: item.description }),
+    );
   }
 
   const input = createElement("input", {
-    attrs: { type: "checkbox", class: "switch", "aria-label": item.label },
+    className: "switch",
+    attrs: { "aria-label": item.label },
+    props: {
+      type: "checkbox",
+      checked: item.value,
+      disabled: item.disabled === true,
+    },
+    on: {
+      change: (event) => {
+        item.onChange((event.currentTarget as HTMLInputElement).checked);
+      },
+    },
   });
 
-  input.checked = item.value;
-  input.disabled = item.disabled === true;
-
-  input.addEventListener("change", () => {
-    item.onChange(input.checked);
+  return createElement("label", {
+    className: "toggle-row",
+    children: [createElement("div", { children: textChildren }), input],
   });
-
-  row.append(text, input);
-
-  return row;
 }
 
 function renderSelect(
@@ -42,39 +48,38 @@ function renderSelect(
   context: SettingsContext,
 ): HTMLElement {
   const id = controlId(context, item.id);
-  const field = createElement("div", { className: "field" });
 
   const select = createElement("select", {
     className: "input",
     attrs: { id },
+    props: { disabled: item.disabled === true },
+    on: {
+      change: (event) => {
+        item.onChange((event.currentTarget as HTMLSelectElement).value);
+      },
+    },
   });
 
   for (const option of item.options) {
-    const node = createElement("option", {
-      attrs: { value: option.value },
-      text: option.label,
-    });
-
-    if (option.value === item.value) {
-      node.selected = true;
-    }
-
-    select.append(node);
+    select.appendChild(
+      createElement("option", {
+        attrs: { value: option.value },
+        text: option.label,
+        props: { selected: option.value === item.value },
+      }),
+    );
   }
 
-  select.disabled = item.disabled === true;
-
-  select.addEventListener("change", () => {
-    item.onChange(select.value);
+  const field = createElement("div", {
+    className: "field",
+    children: [
+      createElement("label", { attrs: { for: id }, text: item.label }),
+      select,
+    ],
   });
 
-  field.append(
-    createElement("label", { attrs: { for: id }, text: item.label }),
-    select,
-  );
-
   if (item.description) {
-    field.append(createHint(item.description));
+    field.appendChild(createHint(item.description));
   }
 
   return field;
@@ -85,62 +90,52 @@ function renderInput(
   context: SettingsContext,
 ): HTMLElement {
   const id = controlId(context, item.id);
-  const field = createElement("div", { className: "field" });
+  const isNumber = item.type === "number";
 
   const input = createElement("input", {
     className: "input",
-    attrs: { id, type: item.type },
+    attrs: { id },
+    props: {
+      type: item.type,
+      value: String(item.value),
+      disabled: item.disabled === true,
+      placeholder: isNumber ? undefined : item.placeholder,
+      maxLength: isNumber ? undefined : item.maxLength || undefined,
+      min: isNumber && item.min !== undefined ? String(item.min) : undefined,
+      max: isNumber && item.max !== undefined ? String(item.max) : undefined,
+      step: isNumber && item.step !== undefined ? String(item.step) : undefined,
+    },
+    on: {
+      change: (event) => {
+        const target = event.currentTarget as HTMLInputElement;
+
+        if (isNumber) {
+          const next = Number(target.value);
+
+          if (!Number.isFinite(next)) {
+            target.value = String(item.value);
+            return;
+          }
+
+          item.onChange(next);
+          return;
+        }
+
+        item.onChange(target.value);
+      },
+    },
   });
 
-  input.value = String(item.value);
-
-  if (item.type === "text") {
-    if (item.placeholder) {
-      input.placeholder = item.placeholder;
-    }
-
-    if (item.maxLength) {
-      input.maxLength = item.maxLength;
-    }
-  } else {
-    if (item.min !== undefined) {
-      input.min = String(item.min);
-    }
-
-    if (item.max !== undefined) {
-      input.max = String(item.max);
-    }
-
-    if (item.step !== undefined) {
-      input.step = String(item.step);
-    }
-  }
-
-  input.disabled = item.disabled === true;
-
-  input.addEventListener("change", () => {
-    if (item.type === "number") {
-      const next = Number(input.value);
-
-      if (!Number.isFinite(next)) {
-        input.value = String(item.value);
-        return;
-      }
-
-      item.onChange(next);
-      return;
-    }
-
-    item.onChange(input.value);
+  const field = createElement("div", {
+    className: "field",
+    children: [
+      createElement("label", { attrs: { for: id }, text: item.label }),
+      input,
+    ],
   });
-
-  field.append(
-    createElement("label", { attrs: { for: id }, text: item.label }),
-    input,
-  );
 
   if (item.description) {
-    field.append(createHint(item.description));
+    field.appendChild(createHint(item.description));
   }
 
   return field;
@@ -159,17 +154,16 @@ function renderButton(
     .filter(Boolean)
     .join(" ");
 
-  const button = createElement("button", {
+  return createElement("button", {
     className,
-    attrs: { type: "button" },
     text: item.label,
+    props: { type: "button" },
+    on: {
+      click: () => {
+        item.onClick();
+      },
+    },
   });
-
-  button.addEventListener("click", () => {
-    item.onClick();
-  });
-
-  return button;
 }
 
 function renderCustom(
@@ -177,20 +171,20 @@ function renderCustom(
   context: SettingsContext,
   teardowns: (() => void)[],
 ): HTMLElement {
-  const host = createElement("div", { className: "yapmod-setting" });
+  const children: Node[] = [];
 
   if (item.label) {
-    host.append(
+    children.push(
       createElement("div", { className: "toggle-label", text: item.label }),
     );
   }
 
   if (item.description) {
-    host.append(createHint(item.description));
+    children.push(createHint(item.description));
   }
 
   const body = createElement("div");
-  host.append(body);
+  children.push(body);
 
   const teardown = item.render(body, context);
 
@@ -198,7 +192,7 @@ function renderCustom(
     teardowns.push(teardown);
   }
 
-  return host;
+  return createElement("div", { className: "yapmod-setting", children });
 }
 
 export function renderSettingsItem(

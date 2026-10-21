@@ -2,7 +2,7 @@ import logoSvg from "../../assets/icon.svg";
 import type { ReleaseInfo, YapmodModal, YapmodScope } from "./shared/types";
 import { createReleaseSection, formatReleaseDate } from "./shared/release";
 import { checkForUpdate, showUpdateAvailableModal } from "./shared/update";
-import { upsertStyle } from "./shared/ui";
+import { upsertStyle, createElement } from "./shared/ui";
 
 const STYLE_ELEMENT_ID = "yapmod-injected-styles";
 const DRAG_REGION_ID = "yapmod-drag-region";
@@ -23,51 +23,53 @@ function ensureDragRegion(): void {
     return;
   }
 
-  const region = document.createElement("div");
-  region.id = DRAG_REGION_ID;
-  region.setAttribute("data-tauri-drag-region", "");
+  const region = createElement("div", {
+    props: { id: DRAG_REGION_ID },
+    attrs: { "data-tauri-drag-region": "" },
+  });
   document.body.appendChild(region);
 }
 
 function createReleaseHero(release: ReleaseInfo): HTMLElement {
-  const hero = document.createElement("div");
-  hero.className = "yapmod-release-hero";
-  hero.setAttribute("aria-hidden", "true");
-
-  const logo = document.createElement("div");
-  logo.className = "yapmod-release-logo";
-  logo.innerHTML = RELEASE_LOGO;
-
-  const text = document.createElement("div");
-  text.className = "yapmod-release-hero-text";
-
-  const eyebrow = document.createElement("span");
-  eyebrow.className = "yapmod-release-eyebrow";
-  eyebrow.textContent = release.firstRun ? "Welcome" : "What's new";
-
-  const version = document.createElement("span");
-  version.className = "yapmod-release-version";
-  version.textContent = `v${release.version}`;
-
-  text.append(eyebrow, version);
+  const textChildren: Node[] = [
+    createElement("span", {
+      className: "yapmod-release-eyebrow",
+      text: release.firstRun ? "Welcome" : "What's new",
+    }),
+    createElement("span", {
+      className: "yapmod-release-version",
+      text: `v${release.version}`,
+    }),
+  ];
 
   const date = formatReleaseDate(release.notes?.date);
+
   if (date) {
-    const dateElement = document.createElement("span");
-    dateElement.className = "yapmod-release-date";
-    dateElement.textContent = date;
-    text.appendChild(dateElement);
+    textChildren.push(
+      createElement("span", {
+        className: "yapmod-release-date",
+        text: date,
+      }),
+    );
   }
 
-  hero.append(logo, text);
-
-  return hero;
+  return createElement("div", {
+    className: "yapmod-release-hero",
+    attrs: { "aria-hidden": "true" },
+    children: [
+      createElement("div", {
+        className: "yapmod-release-logo",
+        html: RELEASE_LOGO,
+      }),
+      createElement("div", {
+        className: "yapmod-release-hero-text",
+        children: textChildren,
+      }),
+    ],
+  });
 }
 
 function createReleaseContent(release: ReleaseInfo): HTMLElement {
-  const content = document.createElement("div");
-  content.className = "yapmod-release-body";
-
   const notes = release.notes ?? {};
   const summary =
     notes.summary ??
@@ -75,16 +77,21 @@ function createReleaseContent(release: ReleaseInfo): HTMLElement {
       ? "Thanks for giving yapmod a try. It's still early in development, so expect a few rough edges while it grows."
       : `yapmod has been updated to v${release.version}.`);
 
-  const summaryElement = document.createElement("p");
-  summaryElement.className = "yapmod-release-summary";
-  summaryElement.textContent = summary;
-  content.appendChild(summaryElement);
+  const children: Node[] = [
+    createElement("p", {
+      className: "yapmod-release-summary",
+      text: summary,
+    }),
+  ];
 
   for (const section of notes.sections ?? []) {
-    content.appendChild(createReleaseSection(section));
+    children.push(createReleaseSection(section));
   }
 
-  return content;
+  return createElement("div", {
+    className: "yapmod-release-body",
+    children,
+  });
 }
 
 function releaseDescription(release: ReleaseInfo): string {
