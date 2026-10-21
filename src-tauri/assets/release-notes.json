@@ -79,5 +79,42 @@
         ]
       }
     ]
+  },
+  "0.3.0": {
+    "title": "Voice calls that work",
+    "date": "2026-10-21",
+    "summary": "This release fixes microphone access on macOS, so voice calls finally work the way they should. It also adds update checks, a changelog in settings, and a documentation site with search.",
+    "sections": [
+      {
+        "heading": "Highlights",
+        "items": [
+          "Voice calls now work on macOS. The first time you join a call, macOS asks for microphone access — click Allow and your mic is live.",
+          "yapmod now checks for new versions and shows a notice when one is available, with a link to the download page.",
+          "Added a documentation site with full-text search for setup, troubleshooting and developer docs."
+        ]
+      },
+      {
+        "heading": "New",
+        "items": [
+          "Settings now include a changelog, so you can read the notes for every yapmod release from inside the app.",
+          "Camera access is declared as well, so video features can ask for it without another update."
+        ]
+      },
+      {
+        "heading": "Fixed",
+        "items": [
+          "The previous settings panel no longer stays visible when you switch sections.",
+          "Settings from older yapmod versions are migrated correctly, so your window options survive an update.",
+          "The Linux app now uses the proper Tux icon."
+        ]
+      },
+      {
+        "heading": "Troubleshooting",
+        "items": [
+          "If you denied the microphone prompt before, enable yapmod in System Settings → Privacy & Security → Microphone.",
+          "If yapmod is not listed there, run tccutil reset Microphone io.ilyeshdz.yapmod in Terminal and relaunch the app."
+        ]
+      }
+    ]
   }
 }

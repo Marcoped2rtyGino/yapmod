@@ -10,8 +10,17 @@ description: What changed in each release.
 
 ## Unreleased
 
-- Added a real update check with an update notice modal.
+- Nothing yet.
+
+## 0.3.0
+
+- Fixed microphone and camera permissions on macOS, so voice calls work.
+- Added an update check with an update notice modal.
+- Added a changelog section to the settings page.
+- Added a documentation site with full-text search.
 - Fixed the previous settings panel staying visible when switching sections.
+- Migrated legacy settings from older versions.
+- Fixed the Linux app icon.
 
 ## 0.2.0
 
