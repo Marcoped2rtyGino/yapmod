@@ -81,11 +81,26 @@ jobs:
             fi
           done
 
+      - name: Load release notes
+        id: notes
+        run: |
+          notes_file=".github/release-notes/v${{ inputs.version }}.md"
+
+          if [ -f "$notes_file" ]; then
+            {
+              echo "body<<YAPMOD_RELEASE_NOTES_EOF"
+              cat "$notes_file"
+              echo "YAPMOD_RELEASE_NOTES_EOF"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "body=If you can see this, I forgot to change the release description." >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ inputs.version }}
           name: v${{ inputs.version }}
-          body: "If you can see this, I forgot to change the release description."
+          body: ${{ steps.notes.outputs.body }}
           files: renamed_artifacts/*
           draft: true
