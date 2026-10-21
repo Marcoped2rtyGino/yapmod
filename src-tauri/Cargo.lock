@@ -5130,7 +5130,7 @@ dependencies = [
 
 [[package]]
 name = "yapmod"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "include-flate",
  "reqwest 0.12.28",

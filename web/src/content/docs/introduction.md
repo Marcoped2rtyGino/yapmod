@@ -17,7 +17,7 @@ It wraps Yapper in its own native window built with Tauri, and adds yapmod's own
 - **Open source:** the whole client is public on GitHub.
 - **Desktop app:** a Tauri shell with a TypeScript front end, bundled with Vite.
 - **Cross-platform:** Windows, macOS (Intel and Apple Silicon) and Linux builds.
-- **Current version:** 0.2.0 in `package.json`.
+- **Current version:** 0.3.0 in `package.json`.
 
 ## Where to go next
 
