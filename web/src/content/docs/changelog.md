@@ -14,8 +14,9 @@ description: What changed in each release.
 
 ## 0.3.0
 
+- Added notification and mention badges, desktop notifications and notification sounds on Windows, macOS and Linux.
 - Fixed microphone and camera permissions on macOS, so voice calls work.
-- Added an update check with an update notice modal.
+- Added an update check with an update notice modal and an automatic-check setting.
 - Added a changelog section to the settings page.
 - Added a documentation site with full-text search.
 - Fixed the previous settings panel staying visible when switching sections.

@@ -81,23 +81,23 @@
     ]
   },
   "0.3.0": {
-    "title": "Voice calls that work",
+    "title": "Notifications, voice calls, and updates",
     "date": "2026-10-21",
-    "summary": "This release fixes microphone access on macOS, so voice calls finally work the way they should. It also adds update checks, a changelog in settings, and a documentation site with search.",
+    "summary": "This release adds notification and mention badges on every platform, fixes voice calls on macOS, and makes yapmod easier to keep up to date.",
     "sections": [
       {
         "heading": "Highlights",
         "items": [
-          "Voice calls now work on macOS. The first time you join a call, macOS asks for microphone access — click Allow and your mic is live.",
-          "yapmod now checks for new versions and shows a notice when one is available, with a link to the download page.",
-          "Added a documentation site with full-text search for setup, troubleshooting and developer docs."
+          "Unread and mention badges now show up on servers and channels, with desktop notifications and notification sounds on Windows, macOS and Linux.",
+          "Voice calls now work on macOS. The first time you join a call, allow microphone access and your mic is live.",
+          "yapmod now checks for updates and shows a notice when a newer version is available."
         ]
       },
       {
         "heading": "New",
         "items": [
-          "Settings now include a changelog, so you can read the notes for every yapmod release from inside the app.",
-          "Camera access is declared as well, so video features can ask for it without another update."
+          "Added a changelog in settings, so you can read the notes for every release from inside the app.",
+          "Added a documentation site with full-text search for setup, troubleshooting, FAQ and developer docs."
         ]
       },
       {
@@ -109,9 +109,9 @@
         ]
       },
       {
-        "heading": "Troubleshooting",
+        "heading": "If your mic still does not work",
         "items": [
-          "If you denied the microphone prompt before, enable yapmod in System Settings → Privacy & Security → Microphone.",
+          "Enable yapmod in System Settings → Privacy & Security → Microphone, then relaunch.",
           "If yapmod is not listed there, run tccutil reset Microphone io.ilyeshdz.yapmod in Terminal and relaunch the app."
         ]
       }
