@@ -19,6 +19,12 @@ fn main() {
             "request_notification_permission",
             "check_for_update",
             "get_changelog",
+            "list_themes",
+            "themes_folder",
+            "open_themes_folder",
+            "pick_theme_folder",
+            "install_theme",
+            "remove_theme",
         ]),
     ))
     .expect("failed to run tauri-build");

@@ -1,5 +1,6 @@
 import type { SettingsContext, SettingsItem } from "./types";
 import { createElement } from "./ui";
+import { createDropdown } from "./dropdown";
 
 function controlId(context: SettingsContext, itemId: string): string {
   return `yapmod-${context.id}-${itemId}`.replace(/[^a-zA-Z0-9_-]/g, "-");
@@ -46,35 +47,33 @@ function renderToggle(
 function renderSelect(
   item: Extract<SettingsItem, { type: "select" }>,
   context: SettingsContext,
+  teardowns: (() => void)[],
 ): HTMLElement {
   const id = controlId(context, item.id);
 
-  const select = createElement("select", {
-    className: "input",
-    attrs: { id },
-    props: { disabled: item.disabled === true },
-    on: {
-      change: (event) => {
-        item.onChange((event.currentTarget as HTMLSelectElement).value);
-      },
+  const dropdown = createDropdown({
+    id,
+    value: item.value,
+    options: item.options.map((option) => ({
+      value: option.value,
+      label: option.label,
+    })),
+    onChange: (value) => {
+      item.onChange(value);
     },
+    disabled: item.disabled,
+    ariaLabel: item.label,
   });
 
-  for (const option of item.options) {
-    select.appendChild(
-      createElement("option", {
-        attrs: { value: option.value },
-        text: option.label,
-        props: { selected: option.value === item.value },
-      }),
-    );
-  }
+  teardowns.push(() => {
+    dropdown.destroy();
+  });
 
   const field = createElement("div", {
     className: "field",
     children: [
       createElement("label", { attrs: { for: id }, text: item.label }),
-      select,
+      dropdown.element,
     ],
   });
 
@@ -204,7 +203,7 @@ export function renderSettingsItem(
     case "toggle":
       return renderToggle(item);
     case "select":
-      return renderSelect(item, context);
+      return renderSelect(item, context, teardowns);
     case "text":
     case "number":
       return renderInput(item, context);

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-themes-folder"
+description = "Enables the themes_folder command without any pre-configured scope."
+commands.allow = ["themes_folder"]
+
+[[permission]]
+identifier = "deny-themes-folder"
+description = "Denies the themes_folder command without any pre-configured scope."
+commands.deny = ["themes_folder"]

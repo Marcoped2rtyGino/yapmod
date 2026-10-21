@@ -63,7 +63,7 @@ html[data-yapmod-os="macos"] #yapmod-drag-region {
 
 .yapmod-changelog-release {
   padding: 16px 0;
-  border-top: 1px solid rgba(127, 127, 127, 0.25);
+  border-top: 1px solid var(--ym-border, var(--border, rgba(127, 127, 127, 0.25)));
 }
 
 .yapmod-changelog-release:first-child {
@@ -94,8 +94,8 @@ html[data-yapmod-os="macos"] #yapmod-drag-region {
   letter-spacing: 0.04em;
   padding: 1px 6px;
   border-radius: 999px;
-  background: rgba(246, 117, 103, 0.15);
-  color: #f67567;
+  background: var(--ym-brand-soft, rgba(246, 117, 103, 0.15));
+  color: var(--ym-brand, #f67567);
 }
 
 .yapmod-changelog-title {
@@ -118,14 +118,19 @@ html[data-yapmod-os="macos"] #yapmod-drag-region {
   gap: 14px;
   min-height: 76px;
   padding: 14px 18px;
-  color: #fff;
-  background: linear-gradient(135deg, #f67567 0%, #ff8a70 55%, #ffb25f 100%);
+  color: var(--ym-on-accent, var(--on-accent, #fff));
+  background: linear-gradient(
+    135deg,
+    var(--ym-brand, #f67567) 0%,
+    var(--ym-brand-2, #ff8a70) 55%,
+    var(--ym-brand-3, #ffb25f) 100%
+  );
 }
 
 .yapmod-release-logo {
   flex: none;
   width: 46px;
-  color: #fff;
+  color: var(--ym-on-accent, var(--on-accent, #fff));
   filter: drop-shadow(0 4px 10px rgba(94, 23, 16, 0.2));
 }
 
@@ -162,20 +167,20 @@ html[data-yapmod-os="macos"] #yapmod-drag-region {
 }
 
 .yapmod-release-modal .yapmod-modal-close {
-  color: #fff;
+  color: var(--ym-on-accent, var(--on-accent, #fff));
   background: transparent;
   opacity: 0.8;
 }
 
 .yapmod-release-modal .yapmod-modal-close:hover,
 .yapmod-release-modal .yapmod-modal-close:focus-visible {
-  background: rgba(77, 22, 15, 0.14);
+  background: var(--ym-brand-hover, rgba(77, 22, 15, 0.14));
   opacity: 1;
 }
 
 .yapmod-release-summary {
   margin: 0 0 14px;
-  color: var(--text-dim, rgba(255, 255, 255, 0.72));
+  color: var(--ym-text-muted, var(--text-dim, rgba(255, 255, 255, 0.72)));
   font-size: 13px;
   line-height: 1.55;
 }
@@ -186,7 +191,7 @@ html[data-yapmod-os="macos"] #yapmod-drag-region {
 
 .yapmod-release-section h3 {
   margin: 0 0 6px;
-  color: var(--text-dim, rgba(255, 255, 255, 0.62));
+  color: var(--ym-text-muted, var(--text-dim, rgba(255, 255, 255, 0.62)));
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -205,7 +210,7 @@ html[data-yapmod-os="macos"] #yapmod-drag-region {
 .yapmod-release-list li {
   position: relative;
   padding-left: 15px;
-  color: var(--text, #fff);
+  color: var(--ym-text, var(--text, #fff));
   font-size: 13px;
   line-height: 1.5;
 }
@@ -218,7 +223,7 @@ html[data-yapmod-os="macos"] #yapmod-drag-region {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--tint-a, #5865f2);
+  background: var(--ym-accent, var(--tint-a, #5865f2));
 }
 
 .yapmod-release-modal .yapmod-modal-foot {
@@ -255,7 +260,7 @@ html[data-yapmod-os="macos"] #yapmod-drag-region {
 }
 
 .yapmod-update-version-latest .yapmod-update-version-number {
-  color: #f67567;
+  color: var(--ym-brand, #f67567);
 }
 
 .yapmod-update-modal .yapmod-modal-foot {

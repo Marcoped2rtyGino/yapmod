@@ -14,7 +14,12 @@ export type Config = { last_seen_version: string | null, settings: { [key in str
  * Everything the injected code needs to know about the app is in here, so
  * there is a single global to look at.
  */
-export type Payload = { config: Config, os: string, internalHost: string, release: ReleaseInfo, };
+export type Payload = { config: Config, os: string, internalHost: string, release: ReleaseInfo, 
+/**
+ * The theme the user picked, already loaded so it can be applied
+ * before the first frame is painted.
+ */
+theme: ThemeBundle | null, };
 
 /**
  * A release and its notes.
@@ -35,6 +40,40 @@ export type ReleaseNotes = { title: string | null, date: string | null, summary:
  * One "Highlights"/"New"/"Fixed" block of a release.
  */
 export type ReleaseNotesSection = { heading: string | null, items: Array<string>, };
+
+/**
+ * A theme, ready to be applied.
+ */
+export type ThemeBundle = { id: string, name: string, description: string | null, author: string | null, version: string | null, mode: ThemeMode, tags: Array<string>, css: string, 
+/**
+ * A picture of the theme, as a data address.
+ */
+preview: string | null, };
+
+/**
+ * The `manifest.json` of a theme.
+ *
+ * Only `id` and `name` are required, everything else is optional and only
+ * used to describe the theme.
+ */
+export type ThemeManifest = { id: string, name: string, version: string | null, author: string | null, description: string | null, license: string | null, 
+/**
+ * "dark", "light" or "both".
+ */
+mode: string | null, tags: Array<string>, 
+/**
+ * The theme format the theme was written against.
+ */
+api: number | null, preview: string | null, 
+/**
+ * The stylesheet of the theme, relative to the theme folder.
+ */
+css: string | null, };
+
+/**
+ * The mode a theme asks for.
+ */
+export type ThemeMode = "dark" | "light" | "both";
 
 /**
  * The update information the injected UI needs.

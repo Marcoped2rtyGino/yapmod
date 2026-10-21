@@ -85,6 +85,13 @@ impl Config {
         }
     }
 
+    pub fn setting_str(&self, key: &str) -> Option<&str> {
+        match self.settings.get(key) {
+            Some(Value::String(value)) => Some(value.as_str()),
+            _ => None,
+        }
+    }
+
     pub fn init(
         app: &AppHandle,
         current_version: &str,

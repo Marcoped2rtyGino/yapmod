@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-install-theme"
+description = "Enables the install_theme command without any pre-configured scope."
+commands.allow = ["install_theme"]
+
+[[permission]]
+identifier = "deny-install-theme"
+description = "Denies the install_theme command without any pre-configured scope."
+commands.deny = ["install_theme"]

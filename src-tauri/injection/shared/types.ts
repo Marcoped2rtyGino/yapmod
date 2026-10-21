@@ -8,6 +8,7 @@ import type {
   UpdateInfo,
 } from "../generated/types";
 import type { DesktopBridge } from "./desktop";
+import type { YapmodThemeApi } from "./theme/engine";
 
 export type {
   Config,
@@ -213,6 +214,7 @@ export type YapmodGlobal = {
   modal?: YapmodModalApi;
   settings?: YapmodSettingsApi;
   store?: YapmodStoreApi;
+  theme?: YapmodThemeApi;
 };
 
 export type YapmodScope = typeof globalThis & {

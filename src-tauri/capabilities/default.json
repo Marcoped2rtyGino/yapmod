@@ -12,7 +12,14 @@
     "allow-notify",
     "allow-request-notification-permission",
     "allow-check-for-update",
-    "allow-get-changelog"
+    "allow-get-changelog",
+    "allow-list-themes",
+    "allow-themes-folder",
+    "allow-open-themes-folder",
+    "allow-pick-theme-folder",
+    "allow-install-theme",
+    "allow-remove-theme",
+    "dialog:allow-open"
   ],
   "remote": {
     "urls": ["https://yapper.website", "https://*.yapper.website"]

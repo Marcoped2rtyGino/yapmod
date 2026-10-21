@@ -120,7 +120,7 @@ function createChangelogSection(): SettingsSection {
     id: CHANGELOG_SECTION_ID,
     label: "Changelog",
     group: GROUP_LABEL,
-    order: 1,
+    order: 2,
     description: "Every yapmod release, newest first.",
     render: (host) => {
       let cancelled = false;
@@ -206,6 +206,7 @@ export function installDefaultSettings(): void {
     id: SECTION_ID,
     label: GROUP_LABEL,
     group: GROUP_LABEL,
+    order: 0,
     description: "Options for the yapmod desktop client.",
     items,
   };

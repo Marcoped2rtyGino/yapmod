@@ -5,6 +5,7 @@ import type {
 } from "./types";
 import { createElement, whenBodyReady } from "./ui";
 import { renderSettingsItem } from "./items";
+import { closeAllDropdowns } from "./dropdown";
 import { getYapmod } from "./scope";
 
 const ACTIVE_CLASS = "yapmod-section-active";
@@ -422,6 +423,10 @@ function deactivate(): void {
   if (!root) {
     return;
   }
+
+  // The menus of the dropdowns live outside the panel, so they are closed
+  // before it disappears.
+  closeAllDropdowns();
 
   root.classList.remove(ACTIVE_CLASS);
 

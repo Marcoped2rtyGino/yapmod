@@ -3,6 +3,7 @@ use ts_rs::TS;
 
 use crate::config::Config;
 use crate::hosts::INTERNAL_HOST;
+use crate::theme::ThemeBundle;
 
 use super::assets::PREINJECT_JS;
 use super::release::{ReleaseInfo, notes_for};
@@ -19,6 +20,9 @@ pub struct Payload {
     pub os: String,
     pub internal_host: String,
     pub release: ReleaseInfo,
+    /// The theme the user picked, already loaded so it can be applied
+    /// before the first frame is painted.
+    pub theme: Option<ThemeBundle>,
 }
 
 pub fn preinject(
@@ -26,6 +30,7 @@ pub fn preinject(
     first_run: bool,
     version: &str,
     previous_version: Option<&str>,
+    theme: Option<ThemeBundle>,
 ) -> String {
     let payload = Payload {
         config: config.clone(),
@@ -37,6 +42,7 @@ pub fn preinject(
             first_run,
             notes: notes_for(version),
         },
+        theme,
     };
 
     let payload = serde_json::to_string(&payload).expect("payload must be valid JSON");

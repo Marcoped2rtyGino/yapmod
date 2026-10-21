@@ -3,6 +3,7 @@ import type { ReleaseInfo, YapmodModal } from "./shared/types";
 import { createReleaseBody, createReleaseHeader } from "./shared/release";
 import { checkForUpdate, showUpdateAvailableModal } from "./shared/update";
 import { upsertStyle, createElement } from "./shared/ui";
+import { remountThemeStyles } from "./shared/theme/engine";
 import { getYapmod } from "./shared/scope";
 
 const STYLE_ELEMENT_ID = "yapmod-injected-styles";
@@ -12,6 +13,10 @@ const RELEASE_LOGO = logoSvg.replace(/fill="#F67567"/g, 'fill="currentColor"');
 
 function applyCss(css: string): void {
   upsertStyle(STYLE_ELEMENT_ID, css);
+
+  // The stylesheet of the theme stays behind the styles of the client, so
+  // a theme can style every part of the app.
+  remountThemeStyles();
 }
 
 /**
@@ -228,6 +233,10 @@ async function scheduleUpdateModal(releaseDone: Promise<void>): Promise<void> {
 
 applyOsAttribute();
 ensureDragRegion();
+
+// The stylesheet of the theme is moved behind the stylesheets of the app,
+// so a theme can style the app with plain CSS.
+remountThemeStyles();
 
 getYapmod().applyCss = applyCss;
 

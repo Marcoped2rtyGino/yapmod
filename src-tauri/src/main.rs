@@ -12,12 +12,14 @@ mod config;
 mod hosts;
 mod injection;
 mod notify;
+mod theme;
 mod update;
 mod version;
 
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
         .invoke_handler(tauri::generate_handler![
             config::set_settings,
@@ -26,6 +28,12 @@ fn main() {
             notify::request_notification_permission,
             update::check_for_update,
             injection::release::get_changelog,
+            theme::list_themes,
+            theme::themes_folder,
+            theme::open_themes_folder,
+            theme::pick_theme_folder,
+            theme::install_theme,
+            theme::remove_theme,
         ])
         .setup(|app| {
             let version = app.package_info().version.to_string();
@@ -37,8 +45,14 @@ fn main() {
 
             let url = WebviewUrl::External("https://www.yapper.website/?auth=in".parse()?);
             let title = format!("Yapmod - v{}", app.package_info().version);
-            let preinject =
-                injection::preinject(&config, first_run, &version, previous_version.as_deref());
+            let active_theme = theme::active_theme(app.handle(), &config);
+            let preinject = injection::preinject(
+                &config,
+                first_run,
+                &version,
+                previous_version.as_deref(),
+                active_theme,
+            );
             let win = WebviewWindowBuilder::new(app, "main", url)
                 .title(title)
                 .inner_size(800.0, 600.0)

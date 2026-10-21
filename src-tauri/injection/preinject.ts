@@ -2,6 +2,8 @@ import { installModalApi } from "./shared/modal";
 import { installSettingsApi } from "./shared/settings";
 import { installStore } from "./shared/store";
 import { installDefaultSettings } from "./shared/defaults";
+import { installThemeEngine } from "./shared/theme/engine";
+import { installThemeSettings } from "./shared/theme/picker";
 import { installDesktopBridge } from "./shared/desktop";
 import { installNotificationApi } from "./shared/notify";
 import { installExternalLinks } from "./shared/links";
@@ -21,7 +23,13 @@ yapmod.changelog = getChangelog;
 installModalApi();
 installStore();
 installSettingsApi();
+
+// The theme is applied before anything else, so the app never shows the
+// wrong colours while it loads.
+installThemeEngine(payload.theme ?? null);
+
 installDefaultSettings();
+installThemeSettings();
 installDesktopBridge();
 installNotificationApi();
 installExternalLinks();

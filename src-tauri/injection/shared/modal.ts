@@ -57,7 +57,7 @@ const MODAL_CSS = `
   justify-content: flex-end;
   gap: 8px;
   padding: 12px 18px;
-  border-top: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+  border-top: 1px solid var(--ym-border, var(--border, rgba(255, 255, 255, 0.08)));
 }
 .yapmod-modal-close {
   position: absolute;
@@ -80,21 +80,21 @@ const MODAL_CSS = `
 }
 .yapmod-modal-close:hover,
 .yapmod-modal-close:focus-visible {
-  background: var(--bg-elev, rgba(255, 255, 255, 0.08));
+  background: var(--ym-bg-elev, var(--bg-elev, rgba(255, 255, 255, 0.08)));
   opacity: 1;
 }
 .yapmod-modal-danger {
   border-color: transparent !important;
-  background: #d9485f !important;
-  color: #fff !important;
+  background: var(--ym-danger, var(--danger, #d9485f)) !important;
+  color: var(--ym-on-accent, var(--on-accent, #fff)) !important;
 }
 .yapmod-modal-danger:hover {
-  background: #c33d53 !important;
+  background: color-mix(in srgb, var(--ym-danger, var(--danger, #d9485f)) 88%, #000) !important;
 }
 .yapmod-modal-primary {
   border-color: transparent !important;
-  background: var(--tint-a, #5865f2) !important;
-  color: #fff !important;
+  background: var(--ym-accent, var(--tint-a, #5865f2)) !important;
+  color: var(--ym-on-accent, var(--on-accent, #fff)) !important;
 }
 html.${SCROLL_LOCK_CLASS},
 html.${SCROLL_LOCK_CLASS} body {
