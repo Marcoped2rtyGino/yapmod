@@ -1,12 +1,12 @@
 ---
 title: Creating a theme
-group: Customize & extend
+group: Themes
 order: 2
-eyebrow: Customize & extend
-description: The theme format of yapmod, with a complete example.
+eyebrow: Themes
+description: The theme format and a complete example.
 ---
 
-A theme is a folder. Inside it there is a `manifest.json` that describes the theme, and a stylesheet that does the styling. Nothing else is required, and nothing is fetched from the internet.
+A theme is a folder with a `manifest.json` and a stylesheet. That is all yapmod needs. It never fetches theme files from the internet.
 
 ```
 midnight-blurple/
@@ -32,23 +32,23 @@ midnight-blurple/
 
 | Field | Required | What it does |
 | --- | --- | --- |
-| `id` | yes | The identifier of the theme. It has to match the name of the folder. |
+| `id` | yes | The identifier of the theme. It becomes the name of the folder inside the themes folder, so it may only use letters, digits, `-`, `_` and `.`, and may not start with a dot. |
 | `name` | yes | The name that is shown in the gallery. |
 | `version` | no | The version of the theme itself. |
 | `author` | no | Who made it. |
 | `description` | no | A line about it. |
 | `license` | no | The license of the theme. |
-| `mode` | no | `dark`, `light` or `both`. A theme that says `both` follows the mode setting in the app. |
-| `tags` | no | Words to search the theme by. |
+| `mode` | no | `dark`, `light` or `both`. A theme that says `both` follows the mode setting in the app. Anything else is treated as `dark`. |
+| `tags` | no | Words that describe the theme. They are read and kept, but the app does not search or filter by them yet. |
 | `api` | no | The theme format the theme was written against. The current version is `1`. |
 | `preview` | no | The name of a preview image in the folder, such as `preview.png`. Without it, the gallery draws a small picture of the app from the tokens of the theme. |
-| `css` | no | The stylesheet of the theme. Defaults to `theme.css`. |
+| `css` | no | The stylesheet of the theme. Defaults to `theme.css`. It has to be a file inside the theme folder. |
 
 A theme that asks for a newer `api` than the app understands is refused, instead of being applied halfway.
 
 ## The stylesheet
 
-The stylesheet is ordinary CSS, and it is added to the app after the styles of the app itself. A theme can therefore style everything, not only the colours.
+The stylesheet is ordinary CSS and loads after the app styles, so it can change more than colours.
 
 There are two attributes on the root element that a theme can use:
 
@@ -59,7 +59,7 @@ There are two attributes on the root element that a theme can use:
 
 ### The tokens
 
-The short way to write a theme is to set the tokens. They are set for the mode, so a theme that supports both writes them twice.
+The simplest way to write a theme is with tokens. A theme that supports both modes defines them twice.
 
 ```css
 :root[data-yapmod-mode="dark"] {
@@ -79,13 +79,13 @@ The short way to write a theme is to set the tokens. They are set for the mode, 
 }
 ```
 
-A token that is not set keeps the value it has, so a theme only has to name the colours it actually changes. The full list is on the [Themes](themes) page.
+A missing token keeps its default value, so define only what you need. The full list is on the [Themes](themes) page.
 
-The tokens are mapped onto the variables of the app, so setting `--ym-bg-main` changes the background of the chat, of the settings and of the dialogs at once.
+For example, `--ym-bg-main` changes the chat, settings and dialog backgrounds together.
 
 ### Plain CSS
 
-Anything the tokens do not cover is written as regular CSS. A theme can restyle a part of the interface, change the font, or move things around.
+Use regular CSS for anything tokens do not cover, such as a font or a component-specific rule.
 
 ```css
 :root[data-yapmod-mode="dark"] {
@@ -99,9 +99,9 @@ Anything the tokens do not cover is written as regular CSS. A theme can restyle 
 
 A few things to keep in mind:
 
-- The stylesheet is added to the page, so relative paths in `url()` point at the web app, not at your theme folder. Use a full address or a `data:` URI for images and fonts.
+- The stylesheet runs in the page, so relative `url()` paths point to the web app, not your theme folder. Use a full address or a `data:` URI for images and fonts.
 - The drag region at the top of the window and the scroll lock of a dialog are functional. Leave them alone.
-- A theme is plain CSS, so it can break the app. When it does, pick **Yapper's theme** in the gallery to get the usual look back.
+- A theme is plain CSS and can break the layout. Pick **Yapper's theme** in the gallery to restore the usual look.
 
 ## A complete example
 
@@ -145,12 +145,8 @@ A few things to keep in mind:
 
 ## Rules
 
-- The id in the manifest has to match the folder name.
-- The manifest has to be valid JSON.
+- The manifest has to be valid JSON, and it needs an `id` and a `name`.
+- The id ends up in a folder name, so it may only use letters, digits, `-`, `_` and `.`, and may not start with a dot.
 - The stylesheet has to be inside the theme folder, and cannot point outside of it.
+- Importing a theme copies the whole folder into the themes folder, under its id. A theme that is already installed under the same id is replaced.
 - A theme is applied as it is. There is no sandbox, and no way to run code from a theme.
-
-## Related
-
-- [Themes](themes) — how themes are installed and used.
-- [Plugins](plugins) — the other half of extending yapmod.

@@ -1,8 +1,8 @@
 ---
 title: Run from source
-group: Project
-order: 3
-eyebrow: Project
+group: Contributing
+order: 1
+eyebrow: Contributing
 description: Set up a local development environment and build yapmod yourself.
 ---
 
@@ -58,8 +58,14 @@ pnpm tauri build
 | `pnpm build` | Type-checks and builds the front-end toolchain. |
 | `pnpm preview` | Previews the front-end build. |
 
+The website in `web/` is a separate Astro project with its own commands:
+
+| Command | What it does |
+| --- | --- |
+| `pnpm dev` | Starts the site on `localhost:4321`. |
+| `pnpm build` | Builds the site into `dist/`. |
+| `pnpm check` | Type-checks the Astro components. |
+
 ## Where to look next
 
-- [Repository guide](project-structure) — how the repository is laid out.
-- [How yapmod works](architecture) — what the pieces actually do.
-- [CI and releases](ci-and-releases) — the checks your change will run.
+- [Contributing](contributing) for how to get a change in.

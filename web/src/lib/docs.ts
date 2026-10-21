@@ -1,13 +1,7 @@
 import type { CollectionEntry } from "astro:content";
 
 /** The sidebar sections, in the order they should appear. */
-export const docGroups = [
-  "Start",
-  "Using yapmod",
-  "How it works",
-  "Customize & extend",
-  "Project",
-] as const;
+export const docGroups = ["Start", "Themes", "Contributing"] as const;
 
 export type DocEntry = CollectionEntry<"docs">;
 

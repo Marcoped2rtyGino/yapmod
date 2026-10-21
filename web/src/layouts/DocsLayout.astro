@@ -29,7 +29,7 @@ const prev = index > 0 ? docs[index - 1] : undefined;
 const next =
   current === "index" ? docs[0] : index !== -1 && index < docs.length - 1 ? docs[index + 1] : undefined;
 
-const pageTitle = current === "index" ? "Documentation" : `${title} – yapmod docs`;
+const pageTitle = current === "index" ? "Documentation" : `${title} | yapmod docs`;
 const pageDescription =
   description ?? `Documentation for yapmod, the open-source desktop app for Yapper.`;
 ---

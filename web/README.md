@@ -21,10 +21,10 @@ src/
 ├── components/    # Nav, Hero, Features, Download, Build, Community, Footer
 │   └── docs/      # DocsHeader, DocsSidebar, DocsToc, PrevNext, SearchPalette
 ├── content/docs/  # The documentation, one Markdown file per page
-├── layouts/       # BaseLayout.astro — <head>, fonts, theme bootstrap
+├── layouts/       # BaseLayout.astro: <head>, fonts, theme bootstrap
 ├── lib/           # Docs helpers, the search index and the release lookup
-├── pages/         # index.astro — the landing page, docs/ — the documentation
-└── styles/        # global.css — the design system, docs.css — the docs page
+├── pages/         # index.astro: the landing page, docs/: the documentation
+└── styles/        # global.css: the design system, docs.css: the docs page
 ```
 
 `src/styles/global.css` holds the whole design system: the light/dark theme
@@ -72,8 +72,8 @@ on every push to `main` that touches `web/`.
 
 The deployed location is set in `astro.config.mjs`:
 
-- `site` — the origin the site is served from.
-- `base` — the path prefix. It is `/yapmod` for GitHub Pages project sites.
+- `site`: the origin the site is served from.
+- `base`: the path prefix. It is `/yapmod` for GitHub Pages project sites.
 
 Update both if the site is hosted elsewhere (a custom domain, Netlify, Vercel,
 Cloudflare Pages, …).

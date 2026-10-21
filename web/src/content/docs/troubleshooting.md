@@ -1,8 +1,8 @@
 ---
 title: Troubleshooting
-group: Using yapmod
+group: Start
 order: 3
-eyebrow: Using yapmod
+eyebrow: Start here
 description: Fixes for the problems people hit most often.
 ---
 
@@ -16,6 +16,14 @@ Builds are ad-hoc signed, which prevents the “damaged app” error, but they a
 
 On macOS, allow yapmod under **System Settings → Privacy & Security → Microphone**. macOS remembers an earlier denial, so the prompt will not reappear on its own. If yapmod is not listed there, quit the app, relaunch it and try joining a call again. As a last resort you can reset the saved decision with `tccutil reset Microphone io.ilyeshdz.yapmod` and relaunch. On Windows, also check **Settings → Privacy & security → Microphone**.
 
+## No notifications arrive
+
+Check that *Desktop notifications* is on in the yapmod section of the settings. Yapper decides when to notify you, so a muted server or channel, Do Not Disturb, or a window that is in front will keep notifications away.
+
+## The unread badge does not show
+
+Check that *Show the unread badge* is on in the yapmod section of the settings. The badge also depends on what the operating system supports: macOS and Linux show a count on the Dock icon, Windows uses an overlay on the taskbar icon.
+
 ## The AppImage won't start
 
 Make it executable with `chmod +x`. Some distributions also need FUSE installed to run AppImages.
@@ -23,6 +31,10 @@ Make it executable with `chmod +x`. Some distributions also need FUSE installed 
 ## Links open inside the app
 
 Recent builds open external links in your browser. Update to the latest release if yours does not.
+
+## A theme looks wrong or breaks the layout
+
+Pick **Yapper's theme** in the theme gallery to get the usual look back, then remove the theme with the × on its card. A theme is plain CSS, so a broken rule can break the interface around it.
 
 ## I'm stuck on the login screen
 

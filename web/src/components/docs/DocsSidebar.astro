@@ -69,8 +69,16 @@ const groups = groupDocs(docs);
     align-self: start;
     height: calc(100vh - 69px);
     overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     padding: 24px 18px 48px 22px;
     border-right: 1.5px solid var(--line);
+  }
+
+  aside::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
   }
 
   .search {
