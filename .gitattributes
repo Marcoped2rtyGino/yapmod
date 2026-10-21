@@ -1,0 +1,2 @@
+# Generated bindings must stay byte-for-byte identical on every platform.
+src-tauri/injection/generated/** text eol=lf

@@ -1,10 +1,46 @@
 import { spawn, spawnSync } from "node:child_process";
-import { dirname, resolve } from "node:path";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const generated = "src-tauri/injection/generated";
+const generatedDir = resolve(root, generated);
 const check = process.argv.includes("--check");
+
+/**
+ * Keeps the generated bindings identical on every platform.
+ *
+ * ts-rs can write platform-specific line endings on Windows, and import
+ * paths may use backslashes there. Neither should make the check fail.
+ */
+function normalizeGenerated(dir) {
+  if (!existsSync(dir)) {
+    return;
+  }
+
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      normalizeGenerated(path);
+      continue;
+    }
+
+    if (!entry.name.endsWith(".ts")) {
+      continue;
+    }
+
+    const source = readFileSync(path, "utf8");
+    const normalized = source
+      .replace(/\r\n/g, "\n")
+      .replace(/(\bfrom\s+"[^"]*?)\\+/g, "$1/");
+
+    if (normalized !== source) {
+      writeFileSync(path, normalized);
+    }
+  }
+}
 
 /**
  * Regenerates the TypeScript bindings of the Rust types.
@@ -30,6 +66,8 @@ child.on("exit", (code) => {
     process.exit(code ?? 1);
   }
 
+  normalizeGenerated(generatedDir);
+
   if (!check) {
     process.exit(0);
   }
@@ -40,9 +78,19 @@ child.on("exit", (code) => {
   });
 
   if (status.stdout.trim()) {
+    const diff = spawnSync("git", ["diff", "--", generated], {
+      cwd: root,
+      encoding: "utf8",
+    });
+
     console.error(
       `The generated types are out of date, run \`pnpm types:generate\`:\n${status.stdout}`,
     );
+
+    if (diff.stdout.trim()) {
+      console.error(diff.stdout);
+    }
+
     process.exit(1);
   }
 });
