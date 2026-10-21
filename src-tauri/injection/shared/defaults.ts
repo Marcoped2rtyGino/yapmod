@@ -10,6 +10,7 @@ import {
 } from "./release";
 import { createElement } from "./ui";
 import { getYapmod } from "./scope";
+import { requestNotificationPermission } from "./notify";
 
 const SECTION_ID = "yapmod";
 const CHANGELOG_SECTION_ID = "yapmod-changelog";
@@ -27,6 +28,7 @@ function createToggle(
     label: string;
     description: string;
     fallback: boolean;
+    onChange?: (value: boolean) => void;
   },
 ): ToggleItem {
   const store = getYapmod().store;
@@ -40,6 +42,7 @@ function createToggle(
     onChange: (value) => {
       item.value = value;
       store?.set(options.id, value);
+      options.onChange?.(value);
     },
   };
 
@@ -176,6 +179,25 @@ export function installDefaultSettings(): void {
       label: "Check for updates automatically",
       description:
         "Look for new yapmod versions when the app starts and show the update window.",
+      fallback: true,
+    }),
+    createToggle({
+      id: "notifications",
+      label: "Desktop notifications",
+      description:
+        "Show a notification in the notification center when a message arrives while the window is in the background.",
+      fallback: true,
+      onChange: (value) => {
+        if (value) {
+          void requestNotificationPermission();
+        }
+      },
+    }),
+    createToggle({
+      id: "unread_badge",
+      label: "Show the unread badge",
+      description:
+        "Put the number of unread messages on the dock or taskbar icon.",
       fallback: true,
     }),
   );

@@ -8,6 +8,9 @@
     "core:window:allow-start-dragging",
     "opener:default",
     "allow-set-settings",
+    "allow-set-badge-count",
+    "allow-notify",
+    "allow-request-notification-permission",
     "allow-check-for-update",
     "allow-get-changelog"
   ],

@@ -7,17 +7,23 @@ use tauri::{
 };
 use tauri_plugin_opener::OpenerExt;
 
+mod badge;
 mod config;
 mod hosts;
 mod injection;
+mod notify;
 mod update;
 mod version;
 
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_notification::init())
         .invoke_handler(tauri::generate_handler![
             config::set_settings,
+            badge::set_badge_count,
+            notify::notify,
+            notify::request_notification_permission,
             update::check_for_update,
             injection::release::get_changelog,
         ])
@@ -25,6 +31,9 @@ fn main() {
             let version = app.package_info().version.to_string();
             let (config, first_run, previous_version) =
                 config::Config::init(app.handle(), &version)?;
+
+            notify::listen(app.handle())
+                .map_err(|error| -> Box<dyn std::error::Error> { error.into() })?;
 
             let url = WebviewUrl::External("https://www.yapper.website/?auth=in".parse()?);
             let title = format!("Yapmod - v{}", app.package_info().version);

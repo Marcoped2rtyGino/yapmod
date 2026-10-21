@@ -7,6 +7,7 @@ import type {
   ReleaseNotesSection,
   UpdateInfo,
 } from "../generated/types";
+import type { DesktopBridge } from "./desktop";
 
 export type {
   Config,
@@ -217,4 +218,8 @@ export type YapmodGlobal = {
 export type YapmodScope = typeof globalThis & {
   __yapmod?: YapmodGlobal;
   __YAPMOD__?: Partial<Payload>;
+  /**
+   * The bridge the host app uses to talk to the desktop shell.
+   */
+  yapperDesktop?: DesktopBridge;
 };
