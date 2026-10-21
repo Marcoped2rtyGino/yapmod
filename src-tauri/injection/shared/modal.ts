@@ -4,11 +4,11 @@ import type {
   ModalContent,
   ModalOptions,
   ModalSize,
-  YapmodGlobal,
   YapmodModal,
   YapmodModalApi,
 } from "./types";
 import { createElement, ensureStyle } from "./ui";
+import { getYapmod } from "./scope";
 
 const MODAL_STYLE_ID = "yapmod-modal-styles";
 const SCROLL_LOCK_CLASS = "yapmod-modal-open";
@@ -700,10 +700,6 @@ const modalApi: YapmodModalApi = {
 
 export { modalApi };
 
-export function installModalApi(yapmod: YapmodGlobal): void {
-  yapmod.modal = modalApi;
-  yapmod.createModal = (options: ModalOptions = {}) =>
-    modalApi.create(options);
-  yapmod.showModal = (options: ModalOptions = {}) =>
-    modalApi.show(options);
+export function installModalApi(): void {
+  getYapmod().modal = modalApi;
 }

@@ -1,5 +1,6 @@
-import type { YapmodGlobal, YapmodStoreApi } from "./types";
+import type { YapmodStoreApi } from "./types";
 import { invokeCommand } from "./tauri";
+import { getYapmod } from "./scope";
 
 const FLUSH_DELAY_MS = 300;
 
@@ -10,7 +11,8 @@ const FLUSH_DELAY_MS = 300;
  * they never touch the IPC bridge. Writes are applied optimistically and
  * persisted in a single debounced batch.
  */
-export function installStore(yapmod: YapmodGlobal): YapmodStoreApi {
+export function installStore(): void {
+  const yapmod = getYapmod();
   const values = new Map<string, unknown>();
   const listeners = new Map<string, Set<(value: unknown) => void>>();
   const pending = new Map<string, unknown>();
@@ -119,6 +121,4 @@ export function installStore(yapmod: YapmodGlobal): YapmodStoreApi {
   };
 
   yapmod.store = store;
-
-  return store;
 }

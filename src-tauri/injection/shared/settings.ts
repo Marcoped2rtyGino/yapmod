@@ -1,11 +1,11 @@
 import type {
   SettingsContext,
   SettingsSection,
-  YapmodGlobal,
   YapmodSettingsApi,
 } from "./types";
 import { createElement, whenBodyReady } from "./ui";
 import { renderSettingsItem } from "./items";
+import { getYapmod } from "./scope";
 
 const ACTIVE_CLASS = "yapmod-section-active";
 const PANEL_CLASS = "yapmod-settings-panel";
@@ -679,6 +679,6 @@ const settingsApi: YapmodSettingsApi = {
   },
 };
 
-export function installSettingsApi(yapmod: YapmodGlobal): void {
-  yapmod.settings = settingsApi;
+export function installSettingsApi(): void {
+  getYapmod().settings = settingsApi;
 }

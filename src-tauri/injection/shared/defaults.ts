@@ -1,7 +1,6 @@
 import type {
   SettingsItem,
   SettingsSection,
-  YapmodGlobal,
 } from "./types";
 import {
   createReleaseBody,
@@ -9,6 +8,7 @@ import {
   sortReleases,
 } from "./release";
 import { createElement } from "./ui";
+import { getYapmod } from "./scope";
 
 const SECTION_ID = "yapmod";
 const CHANGELOG_SECTION_ID = "yapmod-changelog";
@@ -21,7 +21,6 @@ type ToggleItem = Extract<SettingsItem, { type: "toggle" }>;
  * still shows what is actually stored.
  */
 function createToggle(
-  yapmod: YapmodGlobal,
   options: {
     id: string;
     label: string;
@@ -29,7 +28,7 @@ function createToggle(
     fallback: boolean;
   },
 ): ToggleItem {
-  const store = yapmod.store;
+  const store = getYapmod().store;
 
   const item: ToggleItem = {
     type: "toggle",
@@ -55,8 +54,10 @@ function createToggle(
 /**
  * Builds the section that shows the full changelog, one entry per release.
  */
-function createChangelogSection(yapmod: YapmodGlobal): SettingsSection {
+function createChangelogSection(): SettingsSection {
+  const yapmod = getYapmod();
   const releases = sortReleases(yapmod.changelog ?? {});
+  const installedVersion = yapmod.release?.version;
 
   return {
     id: CHANGELOG_SECTION_ID,
@@ -82,7 +83,7 @@ function createChangelogSection(yapmod: YapmodGlobal): SettingsSection {
             className: "yapmod-changelog-header",
             versionClassName: "yapmod-changelog-version",
             dateClassName: "yapmod-changelog-date",
-            current: release.version === yapmod.version,
+            current: release.version === installedVersion,
             currentClassName: "yapmod-changelog-current",
           }),
         ];
@@ -115,7 +116,9 @@ function createChangelogSection(yapmod: YapmodGlobal): SettingsSection {
  * Registers the section that holds yapmod's own settings, so the desktop
  * client is configurable from inside Yapper's settings modal.
  */
-export function installDefaultSettings(yapmod: YapmodGlobal): void {
+export function installDefaultSettings(): void {
+  const yapmod = getYapmod();
+
   if (!yapmod.settings || !yapmod.store) {
     return;
   }
@@ -124,7 +127,7 @@ export function installDefaultSettings(yapmod: YapmodGlobal): void {
 
   if (yapmod.os === "macos") {
     items.push(
-      createToggle(yapmod, {
+      createToggle({
         id: "use_native_titlebar",
         label: "Use native titlebar",
         description:
@@ -135,13 +138,13 @@ export function installDefaultSettings(yapmod: YapmodGlobal): void {
   }
 
   items.push(
-    createToggle(yapmod, {
+    createToggle({
       id: "start_maximized",
       label: "Start maximized",
       description: "Open yapmod maximized. Takes effect after a restart.",
       fallback: false,
     }),
-    createToggle(yapmod, {
+    createToggle({
       id: "auto_update",
       label: "Check for updates automatically",
       description:
@@ -159,5 +162,5 @@ export function installDefaultSettings(yapmod: YapmodGlobal): void {
   };
 
   yapmod.settings.register(section);
-  yapmod.settings.register(createChangelogSection(yapmod));
+  yapmod.settings.register(createChangelogSection());
 }

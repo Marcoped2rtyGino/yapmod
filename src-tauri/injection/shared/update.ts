@@ -1,7 +1,8 @@
-import type { YapmodGlobal, YapmodModal } from "./types";
+import type { YapmodModal } from "./types";
 import { invokeCommand } from "./tauri";
 import { openExternally } from "./links";
 import { createElement } from "./ui";
+import { getYapmod } from "./scope";
 
 const WEBSITE_URL = "https://ilyeshdz.github.io/yapmod";
 const UPDATE_MODAL_ID = "yapmod-update-available";
@@ -79,15 +80,14 @@ export function createUpdateContent(info: UpdateInfo): HTMLElement {
  * yapmod cannot update itself, so the modal only points the user to the
  * website, where the new version can be downloaded.
  */
-export function showUpdateAvailableModal(
-  yapmod: YapmodGlobal,
-  info: UpdateInfo,
-): YapmodModal | null {
-  if (!yapmod.showModal) {
+export function showUpdateAvailableModal(info: UpdateInfo): YapmodModal | null {
+  const modal = getYapmod().modal;
+
+  if (!modal) {
     return null;
   }
 
-  return yapmod.showModal({
+  return modal.show({
     id: UPDATE_MODAL_ID,
     title: UPDATE_MODAL_TITLE,
     description: `yapmod v${info.latest_version} is out. Download it from the website.`,

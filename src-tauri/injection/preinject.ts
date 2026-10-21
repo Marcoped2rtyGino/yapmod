@@ -3,27 +3,23 @@ import { installSettingsApi } from "./shared/settings";
 import { installStore } from "./shared/store";
 import { installDefaultSettings } from "./shared/defaults";
 import { installExternalLinks } from "./shared/links";
-import type { YapmodScope } from "./shared/types";
+import { getScope, getYapmod } from "./shared/scope";
 
-const globalScope = globalThis as YapmodScope;
+const scope = getScope();
+const yapmod = getYapmod();
 
-globalScope.__yapmod ??= {};
-globalScope.__yapmod.preinject = true;
-globalScope.__yapmod.config = globalScope.__YAPMOD_CONFIG__;
-globalScope.__yapmod.os = globalScope.__YAPMOD_OS__;
-globalScope.__yapmod.firstRun = globalScope.__YAPMOD_FIRST_RUN__ === true;
-globalScope.__yapmod.version = globalScope.__YAPMOD_VERSION__;
-globalScope.__yapmod.release = {
-  version: globalScope.__YAPMOD_VERSION__ ?? "",
-  previousVersion: globalScope.__YAPMOD_PREVIOUS_VERSION__ ?? null,
-  firstRun: globalScope.__YAPMOD_FIRST_RUN__ === true,
-  notes: globalScope.__YAPMOD_RELEASE_NOTES__ ?? null,
+yapmod.config = scope.__YAPMOD_CONFIG__;
+yapmod.os = scope.__YAPMOD_OS__;
+yapmod.release = {
+  version: scope.__YAPMOD_VERSION__ ?? "",
+  previousVersion: scope.__YAPMOD_PREVIOUS_VERSION__ ?? null,
+  firstRun: scope.__YAPMOD_FIRST_RUN__ === true,
+  notes: scope.__YAPMOD_RELEASE_NOTES__ ?? null,
 };
+yapmod.changelog = scope.__YAPMOD_ALL_RELEASE_NOTES__ ?? {};
 
-globalScope.__yapmod.changelog = globalScope.__YAPMOD_ALL_RELEASE_NOTES__ ?? {};
-
-installModalApi(globalScope.__yapmod);
-installStore(globalScope.__yapmod);
-installSettingsApi(globalScope.__yapmod);
-installDefaultSettings(globalScope.__yapmod);
+installModalApi();
+installStore();
+installSettingsApi();
+installDefaultSettings();
 installExternalLinks();

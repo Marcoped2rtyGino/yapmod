@@ -1,23 +1,34 @@
 import logoSvg from "../../assets/icon.svg";
-import type { ReleaseInfo, YapmodModal, YapmodScope } from "./shared/types";
+import type { ReleaseInfo, YapmodModal } from "./shared/types";
 import { createReleaseBody, createReleaseHeader } from "./shared/release";
 import { checkForUpdate, showUpdateAvailableModal } from "./shared/update";
 import { upsertStyle, createElement } from "./shared/ui";
+import { getYapmod } from "./shared/scope";
 
 const STYLE_ELEMENT_ID = "yapmod-injected-styles";
 const DRAG_REGION_ID = "yapmod-drag-region";
 const RELEASE_SEEN_KEY = "yapmod-release-seen";
 const RELEASE_LOGO = logoSvg.replace(/fill="#F67567"/g, 'fill="currentColor"');
 
-const globalScope = globalThis as YapmodScope;
-
 function applyCss(css: string): void {
   upsertStyle(STYLE_ELEMENT_ID, css);
 }
 
+/**
+ * Mirrors the operating system on the root element, so the stylesheet can
+ * tell macOS apart from the other platforms.
+ */
+function applyOsAttribute(): void {
+  const os = getYapmod().os;
+
+  if (os) {
+    document.documentElement.dataset.yapmodOs = os;
+  }
+}
+
 function ensureDragRegion(): void {
   if (
-    document.documentElement.dataset.yapmodOs !== "macos" ||
+    getYapmod().os !== "macos" ||
     document.getElementById(DRAG_REGION_ID)
   ) {
     return;
@@ -91,13 +102,13 @@ function shouldShowRelease(release: ReleaseInfo): boolean {
 }
 
 function showReleaseModal(release: ReleaseInfo): YapmodModal | null {
-  const yapmod = globalScope.__yapmod;
+  const modalApi = getYapmod().modal;
 
-  if (!shouldShowRelease(release) || !yapmod?.showModal) {
+  if (!shouldShowRelease(release) || !modalApi) {
     return null;
   }
 
-  const modal = yapmod.showModal({
+  const modal = modalApi.show({
     id: "yapmod-release-notes",
     title: release.firstRun ? "Welcome to yapmod" : "What's new",
     description: releaseDescription(release),
@@ -124,9 +135,10 @@ function showReleaseModal(release: ReleaseInfo): YapmodModal | null {
 }
 
 function scheduleReleaseModal(): Promise<void> {
-  const release = globalScope.__yapmod?.release;
+  const yapmod = getYapmod();
+  const release = yapmod.release;
 
-  if (!release || !globalScope.__yapmod?.showModal || !shouldShowRelease(release)) {
+  if (!release || !yapmod.modal || !shouldShowRelease(release)) {
     return Promise.resolve();
   }
 
@@ -189,9 +201,9 @@ function scheduleReleaseModal(): Promise<void> {
  * notes, so the two never stack up.
  */
 async function scheduleUpdateModal(releaseDone: Promise<void>): Promise<void> {
-  const yapmod = globalScope.__yapmod;
+  const yapmod = getYapmod();
 
-  if (!yapmod?.showModal) {
+  if (!yapmod.modal) {
     return;
   }
 
@@ -208,15 +220,15 @@ async function scheduleUpdateModal(releaseDone: Promise<void>): Promise<void> {
   await releaseDone;
 
   try {
-    showUpdateAvailableModal(yapmod, info);
+    showUpdateAvailableModal(info);
   } catch (error) {
     console.error("[yapmod] failed to show the update modal", error);
   }
 }
 
+applyOsAttribute();
 ensureDragRegion();
 
-globalScope.__yapmod ??= {};
-globalScope.__yapmod.applyCss = applyCss;
+getYapmod().applyCss = applyCss;
 
 void scheduleUpdateModal(scheduleReleaseModal());

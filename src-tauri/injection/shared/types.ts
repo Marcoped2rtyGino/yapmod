@@ -208,17 +208,12 @@ export type YapmodStoreApi = {
 };
 
 export type YapmodGlobal = {
-  preinject?: boolean;
   config?: YapmodConfig;
   os?: string;
-  firstRun?: boolean;
-  version?: string;
   release?: ReleaseInfo;
   changelog?: Record<string, ReleaseNotes>;
   applyCss?: (css: string) => void;
   modal?: YapmodModalApi;
-  createModal?: (options?: ModalOptions) => YapmodModal;
-  showModal?: (options?: ModalOptions) => YapmodModal;
   settings?: YapmodSettingsApi;
   store?: YapmodStoreApi;
 };
