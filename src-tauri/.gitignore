@@ -8,3 +8,6 @@
 
 # Generated injection bundles (see scripts/build-injection.mjs)
 /gen/injection/
+
+# Generated TypeScript bindings (see scripts/generate-types.mjs)
+/bindings/
