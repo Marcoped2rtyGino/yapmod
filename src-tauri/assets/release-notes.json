@@ -80,6 +80,33 @@
       }
     ]
   },
+  "0.3.1": {
+    "title": "Notifications that arrive",
+    "date": "2026-10-21",
+    "summary": "This release makes the desktop notifications and the unread badge work on every platform.",
+    "sections": [
+      {
+        "heading": "Fixed",
+        "items": [
+          "Desktop notifications now show up in the notification center of your system. The webview cannot post them by itself, so yapmod hands them over to the system.",
+          "The number of unread messages now reaches the app icon, on the Dock, the taskbar and the panel."
+        ]
+      },
+      {
+        "heading": "New",
+        "items": [
+          "Added a Desktop notifications option and a Show the unread badge option to the yapmod section in the settings.",
+          "Clicking a notification brings yapmod to the front and opens the message it was about."
+        ]
+      },
+      {
+        "heading": "How it works",
+        "items": [
+          "Yapper keeps deciding when to notify you: muted channels and servers, Do Not Disturb, and a window that is in front are all respected."
+        ]
+      }
+    ]
+  },
   "0.3.0": {
     "title": "Notifications, voice calls, and updates",
     "date": "2026-10-21",
