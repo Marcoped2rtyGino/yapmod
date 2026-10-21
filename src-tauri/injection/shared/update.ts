@@ -1,4 +1,4 @@
-import type { YapmodModal } from "./types";
+import type { UpdateInfo, YapmodModal } from "./types";
 import { invokeCommand } from "./tauri";
 import { openExternally } from "./links";
 import { createElement } from "./ui";
@@ -7,16 +7,6 @@ import { getYapmod } from "./scope";
 const WEBSITE_URL = "https://ilyeshdz.github.io/yapmod";
 const UPDATE_MODAL_ID = "yapmod-update-available";
 const UPDATE_MODAL_TITLE = "Update available";
-
-/**
- * The update information reported by the backend.
- */
-export type UpdateInfo = {
-  current_version: string;
-  latest_version: string;
-  available: boolean;
-  url: string;
-};
 
 /**
  * Asks the backend for the newest published release.

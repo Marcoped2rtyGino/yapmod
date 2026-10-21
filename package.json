@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "injection:build": "node scripts/build-injection.mjs",
-    "injection:check": "tsc -p src-tauri/injection/tsconfig.json"
+    "injection:check": "tsc -p src-tauri/injection/tsconfig.json",
+    "types:generate": "node scripts/generate-types.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",

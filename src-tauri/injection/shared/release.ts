@@ -1,20 +1,18 @@
-import type { ReleaseNotes, ReleaseNotesSection } from "./types";
+import type { ReleaseEntry, ReleaseNotes, ReleaseNotesSection } from "./types";
 import { createElement } from "./ui";
 import { invokeCommand } from "./tauri";
 
-let changelogCache: Record<string, ReleaseNotes> | null = null;
+let changelogCache: ReleaseEntry[] | null = null;
 
 /**
- * Every release, keyed by version.
+ * Every release, newest first.
  *
  * The list is fetched on demand and kept around, so it is not shipped with
  * every page load.
  */
-export async function getChangelog(): Promise<Record<string, ReleaseNotes>> {
+export async function getChangelog(): Promise<ReleaseEntry[]> {
   if (!changelogCache) {
-    changelogCache = await invokeCommand<Record<string, ReleaseNotes>>(
-      "get_changelog",
-    );
+    changelogCache = await invokeCommand<ReleaseEntry[]>("get_changelog");
   }
 
   return changelogCache;
@@ -23,7 +21,9 @@ export async function getChangelog(): Promise<Record<string, ReleaseNotes>> {
 /**
  * Formats an ISO date (YYYY-MM-DD) as a human readable date.
  */
-export function formatReleaseDate(date: string | undefined): string | null {
+export function formatReleaseDate(
+  date: string | null | undefined,
+): string | null {
   if (!date) {
     return null;
   }
@@ -45,9 +45,7 @@ export function formatReleaseDate(date: string | undefined): string | null {
  * Renders one "Highlights"/"New"/"Fixed" block of a release.
  */
 export function createReleaseSection(section: ReleaseNotesSection): HTMLElement {
-  const items = (section.items ?? []).map((item) =>
-    createElement("li", { text: item }),
-  );
+  const items = section.items.map((item) => createElement("li", { text: item }));
 
   const list = createElement("ul", {
     className: "yapmod-release-list",
@@ -75,8 +73,7 @@ export function createReleaseBody(
   notes: ReleaseNotes | null,
   fallbackSummary?: string,
 ): HTMLElement {
-  const releaseNotes: ReleaseNotes = notes ?? {};
-  const summary = releaseNotes.summary ?? fallbackSummary;
+  const summary = notes?.summary ?? fallbackSummary;
   const children: Node[] = [];
 
   if (summary) {
@@ -88,7 +85,7 @@ export function createReleaseBody(
     );
   }
 
-  for (const section of releaseNotes.sections ?? []) {
+  for (const section of notes?.sections ?? []) {
     children.push(createReleaseSection(section));
   }
 
@@ -130,8 +127,7 @@ export type ReleaseHeaderOptions = {
 export function createReleaseHeader(
   release: { version: string; notes?: ReleaseNotes | null },
   options: ReleaseHeaderOptions,
-): HTMLElement {
-  const children: Node[] = [];
+): HTMLElement {  const children: Node[] = [];
 
   if (options.eyebrow) {
     children.push(
@@ -173,36 +169,4 @@ export function createReleaseHeader(
     className: options.className,
     children,
   });
-}
-
-export function compareVersions(left: string, right: string): number {
-  const parse = (version: string): number[] =>
-    version
-      .split(/[.-]/)
-      .map((part) => Number.parseInt(part, 10))
-      .map((part) => (Number.isNaN(part) ? 0 : part));
-
-  const a = parse(left);
-  const b = parse(right);
-
-  for (let index = 0; index < Math.max(a.length, b.length); index += 1) {
-    const diff = (a[index] ?? 0) - (b[index] ?? 0);
-
-    if (diff !== 0) {
-      return diff;
-    }
-  }
-
-  return 0;
-}
-
-/**
- * Returns every release, newest first.
- */
-export function sortReleases<T>(
-  releases: Record<string, T>,
-): Array<{ version: string; notes: T }> {
-  return Object.entries(releases)
-    .sort(([left], [right]) => compareVersions(right, left))
-    .map(([version, notes]) => ({ version, notes }));
 }

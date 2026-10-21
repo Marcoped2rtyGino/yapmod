@@ -12,12 +12,8 @@ const payload = scope.__YAPMOD__ ?? {};
 
 yapmod.config = payload.config;
 yapmod.os = payload.os;
-yapmod.release = {
-  version: payload.version ?? "",
-  previousVersion: payload.previousVersion ?? null,
-  firstRun: payload.firstRun === true,
-  notes: payload.notes ?? null,
-};
+yapmod.internalHost = payload.internalHost;
+yapmod.release = payload.release;
 yapmod.changelog = getChangelog;
 
 installModalApi();

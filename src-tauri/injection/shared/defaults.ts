@@ -1,5 +1,5 @@
 import type {
-  ReleaseNotes,
+  ReleaseEntry,
   SettingsItem,
   SettingsSection,
 } from "./types";
@@ -7,7 +7,6 @@ import {
   createReleaseBody,
   createReleaseHeader,
   getChangelog,
-  sortReleases,
 } from "./release";
 import { createElement } from "./ui";
 import { getYapmod } from "./scope";
@@ -58,7 +57,7 @@ function createToggle(
  */
 function renderChangelog(
   host: HTMLElement,
-  releases: Array<{ version: string; notes: ReleaseNotes }>,
+  releases: ReleaseEntry[],
   installedVersion: string | undefined,
 ): void {
   if (releases.length === 0) {
@@ -124,9 +123,9 @@ function createChangelogSection(): SettingsSection {
       let cancelled = false;
 
       void getChangelog()
-        .then((changelog) => {
+        .then((releases) => {
           if (!cancelled) {
-            renderChangelog(host, sortReleases(changelog), installedVersion);
+            renderChangelog(host, releases, installedVersion);
           }
         })
         .catch((error: unknown) => {

@@ -1,26 +1,21 @@
-export type YapmodConfig = {
-  use_native_titlebar?: boolean | null;
-  start_maximized?: boolean | null;
-  settings?: Record<string, unknown>;
-};
+import type {
+  Config,
+  Payload,
+  ReleaseEntry,
+  ReleaseInfo,
+  ReleaseNotes,
+  ReleaseNotesSection,
+  UpdateInfo,
+} from "../generated/types";
 
-export type ReleaseNotesSection = {
-  heading?: string;
-  items: string[];
-};
-
-export type ReleaseNotes = {
-  title?: string;
-  date?: string;
-  summary?: string;
-  sections?: ReleaseNotesSection[];
-};
-
-export type ReleaseInfo = {
-  version: string;
-  previousVersion: string | null;
-  firstRun: boolean;
-  notes: ReleaseNotes | null;
+export type {
+  Config,
+  Payload,
+  ReleaseEntry,
+  ReleaseInfo,
+  ReleaseNotes,
+  ReleaseNotesSection,
+  UpdateInfo,
 };
 
 export type ModalSize = "sm" | "md" | "lg" | "xl";
@@ -207,23 +202,12 @@ export type YapmodStoreApi = {
   flush(): Promise<void>;
 };
 
-/**
- * Everything the backend tells the injected code.
- */
-export type YapmodPayload = {
-  config?: YapmodConfig;
-  os?: string;
-  version?: string;
-  previousVersion?: string | null;
-  firstRun?: boolean;
-  notes?: ReleaseNotes | null;
-};
-
 export type YapmodGlobal = {
-  config?: YapmodConfig;
+  config?: Config;
   os?: string;
+  internalHost?: string;
   release?: ReleaseInfo;
-  changelog?: () => Promise<Record<string, ReleaseNotes>>;
+  changelog?: () => Promise<ReleaseEntry[]>;
   applyCss?: (css: string) => void;
   modal?: YapmodModalApi;
   settings?: YapmodSettingsApi;
@@ -232,5 +216,5 @@ export type YapmodGlobal = {
 
 export type YapmodScope = typeof globalThis & {
   __yapmod?: YapmodGlobal;
-  __YAPMOD__?: YapmodPayload;
+  __YAPMOD__?: Partial<Payload>;
 };

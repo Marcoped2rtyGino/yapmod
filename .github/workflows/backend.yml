@@ -108,3 +108,6 @@ jobs:
 
       - name: Clippy check
         run: cargo clippy --manifest-path ./src-tauri/Cargo.toml --locked --all-targets -- -D warnings
+
+      - name: Check the generated types
+        run: node scripts/generate-types.mjs --check

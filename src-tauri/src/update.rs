@@ -1,12 +1,16 @@
 use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
+use ts_rs::TS;
+
+use crate::version::is_newer;
 
 const RELEASES_API: &str = "https://api.github.com/repos/ilyeshdz/yapmod/releases/latest";
 const USER_AGENT: &str = concat!("yapmod/", env!("CARGO_PKG_VERSION"));
 const REQUEST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
 
 /// The update information the injected UI needs.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, TS)]
+#[ts(export, export_to = "types.ts")]
 pub struct UpdateInfo {
     /// The version that is running right now.
     pub current_version: String,
@@ -14,41 +18,11 @@ pub struct UpdateInfo {
     pub latest_version: String,
     /// Whether the published version is newer than the running one.
     pub available: bool,
-    /// The page that hosts the downloads.
-    pub url: String,
 }
 
 #[derive(Debug, Deserialize)]
 struct GithubRelease {
     tag_name: String,
-    html_url: String,
-}
-
-/// Splits a version into its numeric parts, so they can be compared.
-fn parse_version(version: &str) -> Vec<u64> {
-    version
-        .trim()
-        .trim_start_matches('v')
-        .split(['.', '-', '+'])
-        .map(|part| part.parse::<u64>().unwrap_or(0))
-        .collect()
-}
-
-/// Returns true when `candidate` is a newer version than `current`.
-fn is_newer(candidate: &str, current: &str) -> bool {
-    let candidate = parse_version(candidate);
-    let current = parse_version(current);
-
-    for index in 0..candidate.len().max(current.len()) {
-        let left = candidate.get(index).copied().unwrap_or(0);
-        let right = current.get(index).copied().unwrap_or(0);
-
-        if left != right {
-            return left > right;
-        }
-    }
-
-    false
 }
 
 /// Looks up the newest published release.
@@ -86,6 +60,5 @@ pub async fn check_for_update(app: AppHandle) -> Result<UpdateInfo, String> {
         available: is_newer(&latest_version, &current_version),
         current_version,
         latest_version,
-        url: release.html_url,
     })
 }

@@ -1,40 +1,20 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use tauri::{Manager, WebviewUrl, WebviewWindowBuilder, webview::PageLoadEvent};
+use tauri::{WebviewUrl, WebviewWindowBuilder, webview::PageLoadEvent};
 use tauri_plugin_opener::OpenerExt;
 
 mod config;
+mod hosts;
 mod injection;
 mod update;
-
-const INTERNAL_HOST: &str = "yapper.website";
-
-/// Checks whether a URL stays on Yapper, so internal windows keep the
-/// default behaviour and external ones are sent to the browser.
-fn is_internal_url(url: &tauri::Url) -> bool {
-    match url.host_str() {
-        Some(host) => {
-            let host = host.to_ascii_lowercase();
-
-            host == INTERNAL_HOST || host.ends_with(&format!(".{INTERNAL_HOST}"))
-        }
-        None => true,
-    }
-}
+mod version;
 
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
-            config::is_first_run,
-            config::get_config,
-            config::set_config,
             config::set_settings,
-            config::get_setting,
-            config::read_config_file,
-            config::write_config_file,
-            config::default_config,
             update::check_for_update,
             injection::release::get_changelog,
         ])
@@ -42,7 +22,6 @@ fn main() {
             let version = app.package_info().version.to_string();
             let (config, first_run, previous_version) =
                 config::Config::init(app.handle(), &version)?;
-            app.manage(config::FirstRun(first_run));
 
             let url = WebviewUrl::External("https://www.yapper.website/?auth=in".parse()?);
             let title = format!("Yapmod - v{}", app.package_info().version);
@@ -63,7 +42,7 @@ fn main() {
                     let app_handle = app.handle().clone();
 
                     move |url, _features| {
-                        if is_internal_url(&url) {
+                        if hosts::is_internal_url(&url) {
                             return tauri::webview::NewWindowResponse::Allow;
                         }
 

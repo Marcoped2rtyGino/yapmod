@@ -1,7 +1,7 @@
 import { invokeCommand } from "./tauri";
+import { getYapmod } from "./scope";
 
 const OPEN_URL_COMMAND = "plugin:opener|open_url";
-const INTERNAL_HOST = "yapper.website";
 const EXTERNAL_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
 const VISIT_BUTTON_LABEL = "visit site";
 const LEAVING_URL_SELECTOR = ".leaving-url";
@@ -9,10 +9,22 @@ const DEDUPE_WINDOW_MS = 1000;
 
 const recentlyOpened = new Map<string, number>();
 
+/**
+ * Whether a host belongs to the app.
+ *
+ * The host comes from the backend, so both sides agree on what counts as
+ * an internal link.
+ */
 function isInternalHost(host: string): boolean {
+  const internal = getYapmod().internalHost;
+
+  if (!internal) {
+    return false;
+  }
+
   const normalized = host.toLowerCase();
 
-  return normalized === INTERNAL_HOST || normalized.endsWith(`.${INTERNAL_HOST}`);
+  return normalized === internal || normalized.endsWith(`.${internal}`);
 }
 
 function resolveUrl(target: unknown): URL | null {
