@@ -25,6 +25,33 @@ pub struct Config {
 const DEFAULT_SETTINGS: [(&str, bool); 2] =
     [("use_native_titlebar", false), ("start_maximized", false)];
 
+/// The settings that used to live at the top level of the config file.
+const LEGACY_SETTINGS: [&str; 2] = ["use_native_titlebar", "start_maximized"];
+
+/// Moves the legacy top-level settings into the settings map, so every
+/// value the user can change lives in exactly one place.
+fn migrate(mut raw: Value) -> Value {
+    let Some(object) = raw.as_object_mut() else {
+        return raw;
+    };
+
+    for key in LEGACY_SETTINGS {
+        let Some(value) = object.remove(key) else {
+            continue;
+        };
+
+        let settings = object
+            .entry("settings")
+            .or_insert_with(|| Value::Object(Default::default()));
+
+        if let Some(settings) = settings.as_object_mut() {
+            settings.entry(key.to_string()).or_insert(value);
+        }
+    }
+
+    raw
+}
+
 impl Default for Config {
     fn default() -> Self {
         let settings = DEFAULT_SETTINGS
@@ -107,7 +134,15 @@ impl Config {
     }
 
     pub fn from_str(contents: impl AsRef<str>) -> ConfigResult<Self> {
-        match serde_json::from_str::<Config>(contents.as_ref()) {
+        let raw = match serde_json::from_str::<Value>(contents.as_ref()) {
+            Ok(raw) => raw,
+            Err(error) => {
+                eprintln!("failed to parse config, using defaults: {error}");
+                return Ok(Self::default());
+            }
+        };
+
+        match serde_json::from_value::<Config>(migrate(raw)) {
             Ok(config) => Ok(Self::default().merge(config)),
             Err(error) => {
                 eprintln!("failed to parse config, using defaults: {error}");
@@ -153,4 +188,46 @@ pub fn set_settings(app: AppHandle, values: BTreeMap<String, Value>) -> Result<(
     }
 
     Config::save(&app, &config).map_err(|error| error.to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Config;
+
+    #[test]
+    fn moves_the_legacy_settings_into_the_map() {
+        let config = Config::from_str(
+            r#"{
+                "use_native_titlebar": true,
+                "start_maximized": true,
+                "last_seen_version": "0.1.2"
+            }"#,
+        )
+        .unwrap();
+
+        assert_eq!(config.setting_bool("use_native_titlebar"), Some(true));
+        assert_eq!(config.setting_bool("start_maximized"), Some(true));
+        assert_eq!(config.last_seen_version.as_deref(), Some("0.1.2"));
+    }
+
+    #[test]
+    fn keeps_the_settings_that_are_already_in_the_map() {
+        let config = Config::from_str(
+            r#"{
+                "use_native_titlebar": true,
+                "settings": { "use_native_titlebar": false }
+            }"#,
+        )
+        .unwrap();
+
+        assert_eq!(config.setting_bool("use_native_titlebar"), Some(false));
+    }
+
+    #[test]
+    fn falls_back_to_the_defaults() {
+        let config = Config::from_str("not json").unwrap();
+
+        assert_eq!(config.setting_bool("use_native_titlebar"), Some(false));
+        assert_eq!(config.setting_bool("start_maximized"), Some(false));
+    }
 }
