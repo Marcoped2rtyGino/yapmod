@@ -1,6 +1,6 @@
 import logoSvg from "../../assets/icon.svg";
 import type { ReleaseInfo, YapmodModal, YapmodScope } from "./shared/types";
-import { createReleaseSection, formatReleaseDate } from "./shared/release";
+import { createReleaseBody, createReleaseHeader } from "./shared/release";
 import { checkForUpdate, showUpdateAvailableModal } from "./shared/update";
 import { upsertStyle, createElement } from "./shared/ui";
 
@@ -31,28 +31,6 @@ function ensureDragRegion(): void {
 }
 
 function createReleaseHero(release: ReleaseInfo): HTMLElement {
-  const textChildren: Node[] = [
-    createElement("span", {
-      className: "yapmod-release-eyebrow",
-      text: release.firstRun ? "Welcome" : "What's new",
-    }),
-    createElement("span", {
-      className: "yapmod-release-version",
-      text: `v${release.version}`,
-    }),
-  ];
-
-  const date = formatReleaseDate(release.notes?.date);
-
-  if (date) {
-    textChildren.push(
-      createElement("span", {
-        className: "yapmod-release-date",
-        text: date,
-      }),
-    );
-  }
-
   return createElement("div", {
     className: "yapmod-release-hero",
     attrs: { "aria-hidden": "true" },
@@ -61,37 +39,23 @@ function createReleaseHero(release: ReleaseInfo): HTMLElement {
         className: "yapmod-release-logo",
         html: RELEASE_LOGO,
       }),
-      createElement("div", {
+      createReleaseHeader(release, {
         className: "yapmod-release-hero-text",
-        children: textChildren,
+        versionClassName: "yapmod-release-version",
+        dateClassName: "yapmod-release-date",
+        eyebrow: release.firstRun ? "Welcome" : "What's new",
+        eyebrowClassName: "yapmod-release-eyebrow",
       }),
     ],
   });
 }
 
 function createReleaseContent(release: ReleaseInfo): HTMLElement {
-  const notes = release.notes ?? {};
-  const summary =
-    notes.summary ??
-    (release.firstRun
-      ? "Thanks for giving yapmod a try. It's still early in development, so expect a few rough edges while it grows."
-      : `yapmod has been updated to v${release.version}.`);
+  const fallback = release.firstRun
+    ? "Thanks for giving yapmod a try. It's still early in development, so expect a few rough edges while it grows."
+    : `yapmod has been updated to v${release.version}.`;
 
-  const children: Node[] = [
-    createElement("p", {
-      className: "yapmod-release-summary",
-      text: summary,
-    }),
-  ];
-
-  for (const section of notes.sections ?? []) {
-    children.push(createReleaseSection(section));
-  }
-
-  return createElement("div", {
-    className: "yapmod-release-body",
-    children,
-  });
+  return createReleaseBody(release.notes, fallback);
 }
 
 function releaseDescription(release: ReleaseInfo): string {

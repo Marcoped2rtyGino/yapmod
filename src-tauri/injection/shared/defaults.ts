@@ -5,7 +5,7 @@ import type {
 } from "./types";
 import {
   createReleaseBody,
-  formatReleaseDate,
+  createReleaseHeader,
   sortReleases,
 } from "./release";
 import { createElement } from "./ui";
@@ -76,37 +76,14 @@ function createChangelogSection(yapmod: YapmodGlobal): SettingsSection {
       }
 
       for (const release of releases) {
-        const headerChildren: Node[] = [
-          createElement("span", {
-            className: "yapmod-changelog-version",
-            text: `v${release.version}`,
-          }),
-        ];
-
-        const date = formatReleaseDate(release.notes?.date);
-
-        if (date) {
-          headerChildren.push(
-            createElement("span", {
-              className: "yapmod-changelog-date",
-              text: date,
-            }),
-          );
-        }
-
-        if (release.version === yapmod.version) {
-          headerChildren.push(
-            createElement("span", {
-              className: "yapmod-changelog-current",
-              text: "Installed",
-            }),
-          );
-        }
-
         const entryChildren: Node[] = [
-          createElement("header", {
+          createReleaseHeader(release, {
+            tag: "header",
             className: "yapmod-changelog-header",
-            children: headerChildren,
+            versionClassName: "yapmod-changelog-version",
+            dateClassName: "yapmod-changelog-date",
+            current: release.version === yapmod.version,
+            currentClassName: "yapmod-changelog-current",
           }),
         ];
 
