@@ -5,7 +5,7 @@
 <h1 align="center">yapmod</h1>
 
 <p align="center">
-  An open-source, modded desktop client for <a href="https://yapper.website">Yapper</a>.
+  A free, open-source, lightweight desktop client for <a href="https://yapper.website">Yapper</a>.
 </p>
 
 <p align="center">
@@ -15,6 +15,22 @@
 
 > [!WARNING]
 > **yapmod is in early development.** Expect missing features, rough edges, and breaking changes.
+
+yapmod gives Yapper a real home on your computer: its own window, native
+integration with your operating system, and small builds that use the webview
+your system already ships instead of bundling a browser. It aims to be more
+than a website in a window, and in time to be a platform you can extend with
+plugins and themes.
+
+It is an independent, community project, not affiliated with Yapper. The
+official team has built a good desktop app of its own; yapmod focuses on being
+lightweight, on supporting macOS (which the official desktop app does not
+currently offer), and on customization and extensibility.
+
+## Documentation
+
+Install guides, feature docs, how it works, and the project roadmap live at
+**[ilyeshdz.github.io/yapmod/docs](https://ilyeshdz.github.io/yapmod/docs/)**.
 
 ## Installation
 
