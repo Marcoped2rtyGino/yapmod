@@ -1,7 +1,10 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use tauri::{WebviewUrl, WebviewWindowBuilder, webview::PageLoadEvent};
+use tauri::{
+    WebviewUrl, WebviewWindowBuilder,
+    webview::{PageLoadEvent, PermissionKind, PermissionResponse},
+};
 use tauri_plugin_opener::OpenerExt;
 
 mod config;
@@ -54,6 +57,25 @@ fn main() {
                         }
 
                         tauri::webview::NewWindowResponse::Deny
+                    }
+                })
+                .on_permission_request(|webview, kind| {
+                    let internal = webview
+                        .url()
+                        .map(|url| hosts::is_internal_url(&url))
+                        .unwrap_or(false);
+
+                    // Voice and video need the microphone and camera. Only
+                    // grant them to the app itself, never to a page that
+                    // somehow navigated the webview elsewhere.
+                    match (internal, kind) {
+                        (true, PermissionKind::Microphone | PermissionKind::Camera) => {
+                            PermissionResponse::Allow
+                        }
+                        (false, PermissionKind::Microphone | PermissionKind::Camera) => {
+                            PermissionResponse::Deny
+                        }
+                        _ => PermissionResponse::Default,
                     }
                 })
                 .on_page_load(|webview, payload| {
