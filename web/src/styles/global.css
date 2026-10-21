@@ -18,6 +18,8 @@
   --accent: #f67567;
   --accent-2: #ff8a70;
   --accent-3: #ffb25f;
+  /* The accent at 20%, used for selections and active states. */
+  --accent-soft: color-mix(in srgb, var(--accent) 20%, transparent);
   /* Readable version of the accent, for text on light backgrounds. */
   --accent-ink: #f67567;
   --g: linear-gradient(135deg, #f67567 0%, #ff8a70 55%, #ffb25f 100%);
@@ -85,6 +87,11 @@ a {
   border-radius: 10px;
 }
 
+::selection {
+  background: var(--accent-soft);
+  color: var(--t);
+}
+
 h1,
 h2,
 h3 {
@@ -104,7 +111,7 @@ h3 {
 
 /* nav ---------------------------------------------------------------------- */
 
-nav {
+.main-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;

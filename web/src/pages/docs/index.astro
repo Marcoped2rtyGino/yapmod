@@ -1,0 +1,78 @@
+---
+import { getCollection } from "astro:content";
+import DocsLayout from "../../layouts/DocsLayout.astro";
+import { docUrl, groupDocs, sortDocs } from "../../lib/docs";
+
+const docs = sortDocs(await getCollection("docs"));
+const groups = groupDocs(docs);
+---
+
+<DocsLayout
+  title="Documentation"
+  eyebrow="Start here"
+  description="Everything about yapmod: installing it, using it and building it from source."
+  current="index"
+>
+  <div class="doc-cards">
+    {
+      [...groups.entries()].map(([group, entries]) => (
+        <section>
+          <h2>{group}</h2>
+          <div class="cards">
+            {entries.map((doc) => (
+              <a href={docUrl(doc.id)}>
+                <b>{doc.data.title}</b>
+                <span>{doc.data.description}</span>
+              </a>
+            ))}
+          </div>
+        </section>
+      ))
+    }
+  </div>
+</DocsLayout>
+
+<style>
+  .doc-cards section {
+    margin-bottom: 40px;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin: 0;
+  }
+
+  .cards a {
+    display: block;
+    padding: 20px;
+    border: 1.5px solid var(--line);
+    border-radius: 16px;
+    background: var(--s);
+    text-decoration: none;
+    color: var(--t);
+    transition: border-color 0.15s ease;
+  }
+
+  .cards a:hover {
+    border-color: var(--accent);
+  }
+
+  .cards b {
+    display: block;
+    font: 700 17px Sora, sans-serif;
+    letter-spacing: -0.03em;
+  }
+
+  .cards span {
+    font-size: 14px;
+    color: var(--m);
+  }
+
+  @media (max-width: 700px) {
+    .cards {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

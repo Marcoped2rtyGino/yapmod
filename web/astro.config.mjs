@@ -7,11 +7,16 @@ export default defineConfig({
   // `site` is the origin, `base` is the path prefix the site is served from.
   site: "https://ilyeshdz.github.io",
   base: "/yapmod",
-  trailingSlash: "never",
   build: {
     format: "directory",
   },
   devToolbar: {
     enabled: false,
+  },
+  markdown: {
+    shikiConfig: {
+      theme: "vitesse-dark",
+      wrap: false,
+    },
   },
 });

@@ -19,14 +19,40 @@ The marketing site for [yapmod](https://github.com/ilyeshdz/yapmod), built with
 src/
 ├── assets/        # Images processed by Astro's asset pipeline
 ├── components/    # Nav, Hero, Features, Download, Build, Community, Footer
+│   └── docs/      # DocsHeader, DocsSidebar, DocsToc, PrevNext, SearchPalette
+├── content/docs/  # The documentation, one Markdown file per page
 ├── layouts/       # BaseLayout.astro — <head>, fonts, theme bootstrap
-├── pages/         # index.astro — the landing page
-└── styles/        # global.css — the design system
+├── lib/           # Docs helpers, the search index and the release lookup
+├── pages/         # index.astro — the landing page, docs/ — the documentation
+└── styles/        # global.css — the design system, docs.css — the docs page
 ```
 
 `src/styles/global.css` holds the whole design system: the light/dark theme
 tokens, the layout primitives, and the responsive rules. Everything else is
 plain markup in the components.
+
+## Documentation
+
+The docs live in `src/content/docs` as Markdown. Every page has a bit of
+frontmatter:
+
+```yaml
+---
+title: Installation
+group: Start # the sidebar section
+order: 2 # the position inside that section
+eyebrow: Start here
+description: Grab the latest build from the Releases page.
+---
+```
+
+`src/content.config.ts` defines the collection, `src/lib/docs.ts` sorts the
+pages into the sidebar and builds their URLs, and
+`src/pages/docs/[...slug].astro` turns each page into a route.
+
+Search uses a small JSON index that is generated at build time
+(`src/pages/docs/search-index.json.ts`) and queried in the browser. Press
+`Cmd+K` (`Ctrl+K`) anywhere on a docs page to open the search palette.
 
 ## Theming
 
