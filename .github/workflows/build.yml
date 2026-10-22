@@ -113,7 +113,7 @@ jobs:
       - name: Build
         run: pnpm tauri build --target ${{ matrix.target }} --bundles ${{ matrix.bundles }}
         env:
-          LINUXDEPLOY_EXCLUDED_LIBRARIES: libwayland-*,libxkbcommon-*,libxcb-*,libXau*,libXdmcp*
+          LINUXDEPLOY_EXCLUDED_LIBRARIES: libwayland-client.so.0,libwayland-cursor.so.0,libwayland-egl.so.1,libwayland-server.so.0,libxkbcommon.so.0,libxcb.so.1,libxcb-render.so.0,libxcb-shm.so.0,libxcb-randr.so.0,libXau.so.6,libXdmcp.so.6
 
       - name: (Linux) Create portable archive
         if: runner.os == 'Linux'
@@ -155,9 +155,28 @@ jobs:
           chmod +x "$APPIMAGE"
           "$APPIMAGE" --appimage-extract > /dev/null 2>&1
           squashfs_root=$(find . -name 'squashfs-root' -type d | head -1)
-          if grep -rq 'libwayland\|libxkbcommon\|libxcb-\|libXau\|libXdmcp' "$squashfs_root"/usr/lib/ 2>/dev/null; then
-            echo "ERROR: AppImage still bundles wayland/display libraries!"
-            find "$squashfs_root"/usr/lib/ -name 'libwayland*' -o -name 'libxkbcommon*' -o -name 'libxcb-*' -o -name 'libXau*' -o -name 'libXdmcp*' 2>/dev/null
+          EXCLUDED_LIBS=(
+            libwayland-client.so.0
+            libwayland-cursor.so.0
+            libwayland-egl.so.1
+            libwayland-server.so.0
+            libxkbcommon.so.0
+            libxcb.so.1
+            libxcb-render.so.0
+            libxcb-shm.so.0
+            libxcb-randr.so.0
+            libXau.so.6
+            libXdmcp.so.6
+          )
+          FOUND=0
+          for lib in "${EXCLUDED_LIBS[@]}"; do
+            if find "$squashfs_root"/usr/lib/ -name "$lib" 2>/dev/null | grep -q .; then
+              echo "ERROR: Found bundled $lib"
+              FOUND=1
+            fi
+          done
+          if [ "$FOUND" -eq 1 ]; then
+            echo "AppImage still bundles wayland/display libraries!"
             exit 1
           fi
           echo "AppImage verification passed — no bundled wayland libraries."

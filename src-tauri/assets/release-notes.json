@@ -166,7 +166,7 @@
       {
         "heading": "Fixed",
         "items": [
-          "Fixed AppImage compatibility on newer Linux distributions (Fedora, Arch, etc.) by excluding bundled wayland, xkbcommon, and xcb libraries. The AppImage now uses the host system's display libraries, preventing EGL crashes on Wayland sessions. A build-time verification step ensures the fix remains effective."
+          "Fixed AppImage compatibility on newer Linux distributions (Fedora, Arch, etc.) by excluding bundled wayland, xkbcommon, and xcb libraries using exact library filenames. The AppImage now uses the host system's display libraries, preventing EGL crashes on Wayland sessions. A build-time verification step ensures the fix remains effective."
         ]
       }
     ]
