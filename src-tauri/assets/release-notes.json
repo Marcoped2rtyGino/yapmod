@@ -145,8 +145,29 @@
     ]
   },
   "0.4.0": {
-    "title": "Tray support",
+    "title": "Themes and system tray",
     "date": "2026-10-22",
-    "summary": "yapmod can keep running in the menu bar or system tray when you close the window."
-  }
-}
+    "summary": "This release adds system tray support, allowing yapmod to keep running in the background, and introduces custom theme support directly in the application.",
+    "sections": [
+      {
+        "heading": "Highlights",
+        "items": [
+          "Added system tray support, allowing yapmod to keep running in the background when its window is closed.",
+          "Introduced custom theme support, with themes loaded from dedicated folders containing a CSS file and a manifest.json file."
+        ]
+      },
+      {
+        "heading": "New",
+        "items": [
+          "yapmod can now remain active in the background, allowing desktop notifications to continue working while the window is hidden.",
+          "Custom themes can now be loaded directly into the application. The theme format and requirements are documented in the documentation site."
+        ]
+      },
+      {
+        "heading": "Fixed",
+        "items": [
+          "Attempted to fix AppImage compatibility issues on newer Linux distributions by removing dependencies on wayland-client.so. This fix has not yet been fully verified, so please open an issue if the AppImage still fails to launch."
+        ]
+      }
+    ]
+  }}
