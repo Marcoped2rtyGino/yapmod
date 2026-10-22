@@ -112,6 +112,8 @@ jobs:
 
       - name: Build
         run: pnpm tauri build --target ${{ matrix.target }} --bundles ${{ matrix.bundles }}
+        env:
+          LINUXDEPLOY_EXCLUDED_LIBRARIES: libwayland-*,libxkbcommon-*,libxcb-*,libXau*,libXdmcp*
 
       - name: (Linux) Create portable archive
         if: runner.os == 'Linux'
@@ -145,6 +147,20 @@ jobs:
           name: yapmod-${{ matrix.target }}-rpm
           path: src-tauri/target/${{ matrix.target }}/release/bundle/rpm/*.rpm
           if-no-files-found: error
+
+      - name: (Linux) Verify AppImage excludes wayland libraries
+        if: runner.os == 'Linux'
+        run: |
+          APPIMAGE=$(find src-tauri/target/${{ matrix.target }}/release/bundle/appimage -name '*.AppImage' | head -1)
+          chmod +x "$APPIMAGE"
+          "$APPIMAGE" --appimage-extract > /dev/null 2>&1
+          squashfs_root=$(find . -name 'squashfs-root' -type d | head -1)
+          if grep -rq 'libwayland\|libxkbcommon\|libxcb-\|libXau\|libXdmcp' "$squashfs_root"/usr/lib/ 2>/dev/null; then
+            echo "ERROR: AppImage still bundles wayland/display libraries!"
+            find "$squashfs_root"/usr/lib/ -name 'libwayland*' -o -name 'libxkbcommon*' -o -name 'libxcb-*' -o -name 'libXau*' -o -name 'libXdmcp*' 2>/dev/null
+            exit 1
+          fi
+          echo "AppImage verification passed — no bundled wayland libraries."
 
       - name: (Linux) Upload .AppImage
         if: runner.os == 'Linux'

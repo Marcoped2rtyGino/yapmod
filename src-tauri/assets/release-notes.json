@@ -166,7 +166,7 @@
       {
         "heading": "Fixed",
         "items": [
-          "Attempted to fix AppImage compatibility issues on newer Linux distributions by removing dependencies on wayland-client.so. This fix has not yet been fully verified, so please open an issue if the AppImage still fails to launch."
+          "Fixed AppImage compatibility on newer Linux distributions (Fedora, Arch, etc.) by excluding bundled wayland, xkbcommon, and xcb libraries. The AppImage now uses the host system's display libraries, preventing EGL crashes on Wayland sessions. A build-time verification step ensures the fix remains effective."
         ]
       }
     ]
