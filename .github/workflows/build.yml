@@ -110,12 +110,6 @@ jobs:
       - name: Install modules
         run: pnpm install --frozen-lockfile
 
-      - name: (Linux) Clear Tauri linuxdeploy cache
-        if: runner.os == 'Linux'
-        run: |
-          rm -rf ~/.cache/tauri/linuxdeploy*
-          rm -rf ~/.cache/tauri/appimage*
-
       - name: Build
         run: pnpm tauri build --target ${{ matrix.target }} --bundles ${{ matrix.bundles }}
 
@@ -151,6 +145,12 @@ jobs:
           name: yapmod-${{ matrix.target }}-rpm
           path: src-tauri/target/${{ matrix.target }}/release/bundle/rpm/*.rpm
           if-no-files-found: error
+
+      - name: (Linux) Fix AppImage wayland libraries
+        if: runner.os == 'Linux'
+        run: |
+          APPIMAGE=$(find src-tauri/target/${{ matrix.target }}/release/bundle/appimage -name '*.AppImage' | head -1)
+          bash scripts/fix-appimage.sh "$APPIMAGE"
 
       - name: (Linux) Verify AppImage excludes wayland libraries
         if: runner.os == 'Linux'
