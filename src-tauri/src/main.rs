@@ -13,11 +13,13 @@ mod hosts;
 mod injection;
 mod notify;
 mod theme;
+mod tray;
 mod update;
 mod version;
+mod window;
 
 fn main() {
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
@@ -117,10 +119,25 @@ fn main() {
                     .title_bar_style(tauri::TitleBarStyle::Overlay)
             };
 
-            win.build()?;
+            let win = win.build()?;
+            window::install_close_handler(&win);
+            tray::install(app.handle(), &config);
 
             Ok(())
         })
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application");
+
+    app.run(|_app, _event| {
+        // Clicking the dock icon while the window is hidden in the tray
+        // brings it back, just like the tray icon does.
+        #[cfg(target_os = "macos")]
+        if let tauri::RunEvent::Reopen {
+            has_visible_windows: false,
+            ..
+        } = _event
+        {
+            window::show_main(_app);
+        }
+    });
 }

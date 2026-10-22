@@ -24,6 +24,10 @@ Check that *Desktop notifications* is on in the yapmod section of the settings. 
 
 Check that *Show the unread badge* is on in the yapmod section of the settings. The badge also depends on what the operating system supports: macOS and Linux show a count on the Dock icon, Windows uses an overlay on the taskbar icon.
 
+## The app keeps running after I close the window
+
+yapmod keeps running in the menu bar on macOS or the system tray on Windows and Linux, so messages and notifications keep arriving. Click the icon to bring the window back, or choose **Quit Yapmod** from its menu. Turn off *Keep running in the menu bar* or *Keep running in the system tray* in the yapmod settings to make closing the window quit the app instead.
+
 ## The AppImage won't start
 
 Make it executable with `chmod +x`. Some distributions also need FUSE installed to run AppImages.

@@ -200,6 +200,18 @@ export function installDefaultSettings(): void {
         "Put the number of unread messages on the dock or taskbar icon.",
       fallback: true,
     }),
+    createToggle({
+      id: "keep_in_tray",
+      label:
+        yapmod.os === "macos"
+          ? "Keep running in the menu bar"
+          : "Keep running in the system tray",
+      description:
+        yapmod.os === "macos"
+          ? "Show an icon in the menu bar and keep yapmod running when you close the window, so notifications keep arriving. Quit from the menu bar."
+          : "Show an icon in the system tray and keep yapmod running when you close the window, so notifications keep arriving. Quit from the tray menu.",
+      fallback: true,
+    }),
   );
 
   const section: SettingsSection = {

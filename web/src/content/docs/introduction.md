@@ -12,7 +12,7 @@ yapmod is an independent community project. It is not made by, endorsed by or af
 
 ## What is different from using Yapper in a browser?
 
-It has its own window and keeps desktop-specific settings, such as notifications, the unread badge and theme selection, in Yapper's settings.
+It has its own window and keeps desktop-specific settings in Yapper's settings, such as notifications, the unread badge, keeping the app in the menu bar or system tray, and theme selection.
 
 External links open in your default browser. A theme can change the Yapper interface, the yapmod settings and dialogs.
 

@@ -1,4 +1,4 @@
-use tauri::{AppHandle, Manager, WebviewWindow};
+use tauri::{AppHandle, Manager};
 use tauri_plugin_notification::{ActionPerformed, NotificationExt};
 
 /// The key the tag of a notification is stored under.
@@ -73,11 +73,11 @@ fn on_action(app: &AppHandle, action: &ActionPerformed) {
         return;
     }
 
-    let Some(window) = app.get_webview_window("main") else {
+    let Some(window) = app.get_webview_window(crate::window::MAIN_WINDOW) else {
         return;
     };
 
-    focus(&window);
+    crate::window::show_main(app);
 
     let Some(tag) = action
         .notification()
@@ -93,11 +93,4 @@ fn on_action(app: &AppHandle, action: &ActionPerformed) {
         format!("window.dispatchEvent(new CustomEvent('{CLICK_EVENT}', {{ detail: {detail} }}))");
 
     let _ = window.eval(&script);
-}
-
-/// Puts the window in front of the user.
-fn focus(window: &WebviewWindow) {
-    let _ = window.unminimize();
-    let _ = window.show();
-    let _ = window.set_focus();
 }

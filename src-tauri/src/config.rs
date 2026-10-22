@@ -22,8 +22,11 @@ pub struct Config {
 }
 
 /// The settings that are always present.
-const DEFAULT_SETTINGS: [(&str, bool); 2] =
-    [("use_native_titlebar", false), ("start_maximized", false)];
+const DEFAULT_SETTINGS: [(&str, bool); 3] = [
+    ("use_native_titlebar", false),
+    ("start_maximized", false),
+    ("keep_in_tray", true),
+];
 
 /// The settings that used to live at the top level of the config file.
 const LEGACY_SETTINGS: [&str; 2] = ["use_native_titlebar", "start_maximized"];
@@ -194,7 +197,13 @@ pub fn set_settings(app: AppHandle, values: BTreeMap<String, Value>) -> Result<(
         config.settings.insert(key, value);
     }
 
-    Config::save(&app, &config).map_err(|error| error.to_string())
+    Config::save(&app, &config).map_err(|error| error.to_string())?;
+
+    // The tray is part of the settings, so it is created or removed right
+    // away instead of waiting for a restart.
+    crate::tray::sync(&app);
+
+    Ok(())
 }
 
 #[cfg(test)]
@@ -236,5 +245,6 @@ mod tests {
 
         assert_eq!(config.setting_bool("use_native_titlebar"), Some(false));
         assert_eq!(config.setting_bool("start_maximized"), Some(false));
+        assert_eq!(config.setting_bool("keep_in_tray"), Some(true));
     }
 }

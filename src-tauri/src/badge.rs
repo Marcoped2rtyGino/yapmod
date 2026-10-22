@@ -1,7 +1,6 @@
 use tauri::{AppHandle, Manager};
 
-/// The window the badge belongs to.
-const MAIN_WINDOW: &str = "main";
+use crate::window::MAIN_WINDOW;
 
 /// The biggest number the badge shows.
 const MAX_COUNT: i64 = 99;
