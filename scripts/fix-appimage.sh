@@ -6,7 +6,8 @@ set -euo pipefail
 # causing WebKitWebProcess to crash with EGL_BAD_PARAMETER
 
 APPIMAGE="${1:?Usage: $0 <path-to-AppImage>}"
-APPIMAGE_DIR=$(dirname "$APPIMAGE")
+APPIMAGE_DIR=$(cd "$(dirname "$APPIMAGE")" && pwd)
+APPIMAGE="${APPIMAGE_DIR}/$(basename "$APPIMAGE")"
 APPIMAGE_BASE=$(basename "$APPIMAGE" .AppImage)
 
 echo "Fixing AppImage: $APPIMAGE"
