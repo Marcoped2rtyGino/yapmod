@@ -9,23 +9,17 @@ on:
       - '.github/workflows/build.yml'
       - 'package.json'
       - 'pnpm-lock.yaml'
+      - 'assets/**'
       - 'scripts/**'
-      - 'src/**'
       - 'src-tauri/**'
-      - 'index.html'
-      - 'vite.config.ts'
-      - 'tsconfig.json'
   pull_request:
     paths:
       - '.github/workflows/build.yml'
       - 'package.json'
       - 'pnpm-lock.yaml'
+      - 'assets/**'
       - 'scripts/**'
-      - 'src/**'
       - 'src-tauri/**'
-      - 'index.html'
-      - 'vite.config.ts'
-      - 'tsconfig.json'
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}

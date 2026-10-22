@@ -1,4 +1,4 @@
-name: Check frontend
+name: Check injected scripts
 
 on:
   workflow_dispatch:
@@ -9,23 +9,17 @@ on:
       - '.github/workflows/frontend.yml'
       - 'package.json'
       - 'pnpm-lock.yaml'
+      - 'assets/**'
       - 'scripts/**'
-      - 'src/**'
       - 'src-tauri/injection/**'
-      - 'index.html'
-      - 'tsconfig.json'
-      - 'vite.config.ts'
   pull_request:
     paths:
       - '.github/workflows/frontend.yml'
       - 'package.json'
       - 'pnpm-lock.yaml'
+      - 'assets/**'
       - 'scripts/**'
-      - 'src/**'
       - 'src-tauri/injection/**'
-      - 'index.html'
-      - 'tsconfig.json'
-      - 'vite.config.ts'
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
@@ -60,6 +54,3 @@ jobs:
 
       - name: Build injection bundles
         run: pnpm injection:build
-
-      - name: Typecheck and build frontend
-        run: pnpm build

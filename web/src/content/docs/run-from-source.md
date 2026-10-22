@@ -40,8 +40,11 @@ pnpm injection:build
 ## Build
 
 ```bash
-# type-check and build the placeholder front end
-pnpm build
+# check the injected scripts
+pnpm injection:check
+
+# bundle the injected scripts (also runs automatically for Tauri builds)
+pnpm injection:build
 
 # build the installers for your platform
 pnpm tauri build
@@ -55,10 +58,8 @@ pnpm tauri build
 | `pnpm injection:build` | Bundles `src-tauri/injection` into the app. |
 | `pnpm injection:check` | Type-checks the injected code. |
 | `pnpm types:generate` | Regenerates the TypeScript types from the Rust types. |
-| `pnpm build` | Type-checks and builds the front-end toolchain. |
-| `pnpm preview` | Previews the front-end build. |
 
-The website in `web/` is a separate Astro project with its own commands:
+The website in `web/` is a separate Astro project. Run these commands from that directory:
 
 | Command | What it does |
 | --- | --- |

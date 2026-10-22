@@ -4,22 +4,17 @@
   "version": "0.4.1",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
     "tauri": "tauri",
     "injection:build": "node scripts/build-injection.mjs",
     "injection:check": "tsc -p src-tauri/injection/tsconfig.json",
     "types:generate": "node scripts/generate-types.mjs"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-opener": "^2"
+    "@tauri-apps/api": "^2"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",
     "esbuild": "^0.28.2",
-    "typescript": "~6.0.3",
-    "vite": "^8.0.16"
+    "typescript": "~6.0.3"
   }
 }
