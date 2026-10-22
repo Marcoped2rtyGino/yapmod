@@ -44,6 +44,11 @@ jobs:
           components: rustfmt
           rustflags: ''
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Rustfmt check
         run: pnpm check:rust:format
 
