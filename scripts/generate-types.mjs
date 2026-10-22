@@ -4,7 +4,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const generated = "src-tauri/injection/generated";
+const generated = "client/generated";
 const generatedDir = resolve(root, generated);
 const check = process.argv.includes("--check");
 
@@ -46,7 +46,7 @@ function normalizeGenerated(dir) {
  * Regenerates the TypeScript bindings of the Rust types.
  *
  * The `ts-rs` export runs as part of the test suite, so the tests are run
- * with the export folder pointed at the injection bundle.
+ * with the export folder pointed at the injected client source.
  */
 const child = spawn(
   "cargo",
@@ -56,7 +56,7 @@ const child = spawn(
     stdio: "inherit",
     env: {
       ...process.env,
-      TS_RS_EXPORT_DIR: "injection/generated",
+      TS_RS_EXPORT_DIR: resolve(root, generated),
     },
   },
 );
@@ -72,23 +72,40 @@ child.on("exit", (code) => {
     process.exit(0);
   }
 
-  const status = spawnSync("git", ["status", "--porcelain", "--", generated], {
-    cwd: root,
-    encoding: "utf8",
-  });
-
-  if (status.stdout.trim()) {
-    const diff = spawnSync("git", ["diff", "--", generated], {
+  const diff = spawnSync(
+    "git",
+    ["diff", "--quiet", "--ignore-space-at-eol", "--", generated],
+    {
+      cwd: root,
+    },
+  );
+  const untracked = spawnSync(
+    "git",
+    ["ls-files", "--others", "--exclude-standard", "--", generated],
+    {
       cwd: root,
       encoding: "utf8",
-    });
+    },
+  );
 
-    console.error(
-      `The generated types are out of date, run \`pnpm types:generate\`:\n${status.stdout}`,
+  if (diff.status !== 0 || untracked.stdout.trim()) {
+    const renderedDiff = spawnSync(
+      "git",
+      ["diff", "--ignore-space-at-eol", "--", generated],
+      {
+        cwd: root,
+        encoding: "utf8",
+      },
     );
 
-    if (diff.stdout.trim()) {
-      console.error(diff.stdout);
+    console.error("The generated types are out of date, run `pnpm types:generate`.");
+
+    if (untracked.stdout.trim()) {
+      console.error(`Untracked generated files:\n${untracked.stdout}`);
+    }
+
+    if (renderedDiff.stdout.trim()) {
+      console.error(renderedDiff.stdout);
     }
 
     process.exit(1);
