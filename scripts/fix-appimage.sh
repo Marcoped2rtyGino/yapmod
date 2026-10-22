@@ -55,28 +55,29 @@ done
 # Clean up empty directories
 find "$APPDIR/usr/lib/" -type d -empty -delete 2>/dev/null || true
 
-# Repack the AppImage using linuxdeploy from Tauri's cache
-LINUXDEPLOY="$HOME/.cache/tauri/linuxdeploy-x86_64.AppImage"
+# Repack the AppImage using the same pinned linuxdeploy version as Tauri.
+TAURI_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/tauri"
+LINUXDEPLOY="${TAURI_CACHE_DIR}/linuxdeploy-07333c6-x86_64.AppImage"
 if [ ! -f "$LINUXDEPLOY" ]; then
-  echo "ERROR: linuxdeploy not found at $LINUXDEPLOY"
-  exit 1
+  mkdir -p "$TAURI_CACHE_DIR"
+  echo "Downloading linuxdeploy to $LINUXDEPLOY"
+  curl --fail --location --retry 3 --output "$LINUXDEPLOY" \
+    https://github.com/tauri-apps/binary-releases/releases/download/linuxdeploy-07333c6/linuxdeploy-x86_64.AppImage
 fi
 
 chmod +x "$LINUXDEPLOY"
-"$LINUXDEPLOY" --appimage-extract-and-run --appdir "$APPDIR" --output appimage
+REPACKED_APPIMAGE="${APPIMAGE_DIR}/${APPIMAGE_BASE}.fixed.AppImage"
+rm -f "$REPACKED_APPIMAGE"
+OUTPUT="$REPACKED_APPIMAGE" "$LINUXDEPLOY" --appimage-extract-and-run --appdir "$APPDIR" --output appimage
 
-# The repacked AppImage should be in the same directory
-NEW_APPIMAGE="${APPIMAGE_DIR}/${APPIMAGE_BASE}*amd64.AppImage"
-if ls $NEW_APPIMAGE 1> /dev/null 2>&1; then
-  # Remove old AppImage and rename the new one
-  rm -f "$APPIMAGE"
-  mv $(ls $NEW_APPIMAGE | head -1) "$APPIMAGE"
-else
+if [ ! -f "$REPACKED_APPIMAGE" ]; then
   echo "ERROR: Could not find repacked AppImage"
   exit 1
 fi
 
+mv -f "$REPACKED_APPIMAGE" "$APPIMAGE"
+
 # Clean up .AppDir
-rm -rf "$APPDIR"
+rm -rf "$APPDIR" "$APPIMAGE_DIR/squashfs-root"
 
 echo "AppImage fixed successfully"
