@@ -1,4 +1,4 @@
-import { createElement } from "./ui";
+import { createElement, safeTeardown, createSvgIcon, createSvgCheck } from "./ui";
 
 /**
  * A dropdown, in the shape the app it wraps uses.
@@ -63,58 +63,7 @@ const openDropdowns = new Set<() => void>();
  * Closes every dropdown that is open.
  */
 export function closeAllDropdowns(): void {
-  for (const close of [...openDropdowns]) {
-    close();
-  }
-}
-
-function createIcon(className: string, width: number, path: string): SVGElement {
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-
-  svg.setAttribute("class", className);
-  svg.setAttribute("width", String(width));
-  svg.setAttribute("height", String(width));
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("aria-hidden", "true");
-
-  const shape = document.createElementNS("http://www.w3.org/2000/svg", "path");
-
-  shape.setAttribute("fill", "currentColor");
-  shape.setAttribute("d", path);
-
-  svg.appendChild(shape);
-
-  return svg;
-}
-
-function createCheck(): SVGElement {
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-
-  svg.setAttribute("class", "dd-check");
-  svg.setAttribute("width", "18");
-  svg.setAttribute("height", "18");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("aria-hidden", "true");
-
-  const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-
-  circle.setAttribute("cx", "12");
-  circle.setAttribute("cy", "12");
-  circle.setAttribute("r", "10");
-  circle.setAttribute("fill", "currentColor");
-
-  const check = document.createElementNS("http://www.w3.org/2000/svg", "path");
-
-  check.setAttribute("d", "m8 12.5 2.6 2.6L16.2 9.4");
-  check.setAttribute("fill", "none");
-  check.setAttribute("stroke", "#fff");
-  check.setAttribute("stroke-width", "2.2");
-  check.setAttribute("stroke-linecap", "round");
-  check.setAttribute("stroke-linejoin", "round");
-
-  svg.append(circle, check);
-
-  return svg;
+  safeTeardown([...openDropdowns]);
 }
 
 /**
@@ -151,7 +100,7 @@ export function createDropdown(options: DropdownOptions): Dropdown {
       ...(options.ariaLabel ? { "aria-label": options.ariaLabel } : {}),
     },
     props: { disabled: options.disabled === true },
-    children: [valueElement, createIcon("dd-chev", 16, CHEVRON_PATH)],
+    children: [valueElement, createSvgIcon("dd-chev", 16, CHEVRON_PATH)],
   });
 
   function updateValue(): void {
@@ -249,7 +198,7 @@ export function createDropdown(options: DropdownOptions): Dropdown {
             className: "dd-label",
             text: option.label,
           }),
-          ...(selected ? [createCheck()] : []),
+          ...(selected ? [createSvgCheck()] : []),
         ],
       });
 

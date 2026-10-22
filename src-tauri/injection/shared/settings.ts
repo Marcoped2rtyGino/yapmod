@@ -3,7 +3,7 @@ import type {
   SettingsSection,
   YapmodSettingsApi,
 } from "./types";
-import { createElement, whenBodyReady } from "./ui";
+import { createElement, safeTeardown, whenBodyReady } from "./ui";
 import { renderSettingsItem } from "./items";
 import { closeAllDropdowns } from "./dropdown";
 import { getYapmod } from "./scope";
@@ -36,7 +36,7 @@ let main: HTMLElement | null = null;
 let panel: HTMLElement | null = null;
 let activeId: string | null = null;
 let pendingOpenId: string | null = null;
-let nativeMainWasHidden: boolean | "until-found" = false;
+let nativeMainWasHidden = false;
 let nativeMainHiddenByUs = false;
 let bodyObserver: MutationObserver | null = null;
 let rootObserver: MutationObserver | null = null;
@@ -52,12 +52,6 @@ function isSettingsRoot(candidate: HTMLElement): boolean {
 }
 
 function findSettingsRoot(): HTMLElement | null {
-  const direct = document.querySelector<HTMLElement>(".settings");
-
-  if (direct && isSettingsRoot(direct)) {
-    return direct;
-  }
-
   for (const candidate of document.querySelectorAll<HTMLElement>(".settings")) {
     if (isSettingsRoot(candidate)) {
       return candidate;
@@ -166,14 +160,7 @@ function refreshSection(entry: SectionEntry): void {
     return;
   }
 
-  for (const teardown of entry.itemTeardowns.splice(0)) {
-    try {
-      teardown();
-    } catch (error) {
-      console.error("[yapmod] settings teardown failed", error);
-    }
-  }
-
+  safeTeardown(entry.itemTeardowns.splice(0));
   host.replaceChildren(...renderItems(entry, createContext(entry)));
 }
 
@@ -583,21 +570,8 @@ function unregister(id: string): void {
     deactivate();
   }
 
-  for (const teardown of entry.teardowns.splice(0)) {
-    try {
-      teardown();
-    } catch (error) {
-      console.error("[yapmod] settings teardown failed", error);
-    }
-  }
-
-  for (const teardown of entry.itemTeardowns.splice(0)) {
-    try {
-      teardown();
-    } catch (error) {
-      console.error("[yapmod] settings teardown failed", error);
-    }
-  }
+  safeTeardown(entry.teardowns.splice(0));
+  safeTeardown(entry.itemTeardowns.splice(0));
 
   entry.panel?.remove();
   entry.panel = null;

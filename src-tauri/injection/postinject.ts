@@ -231,12 +231,25 @@ async function scheduleUpdateModal(releaseDone: Promise<void>): Promise<void> {
   }
 }
 
-applyOsAttribute();
-ensureDragRegion();
+try {
+  applyOsAttribute();
+} catch (error) {
+  console.error("[yapmod] failed to apply OS attribute", error);
+}
+
+try {
+  ensureDragRegion();
+} catch (error) {
+  console.error("[yapmod] failed to ensure drag region", error);
+}
 
 // The stylesheet of the theme is moved behind the stylesheets of the app,
 // so a theme can style the app with plain CSS.
-remountThemeStyles();
+try {
+  remountThemeStyles();
+} catch (error) {
+  console.error("[yapmod] failed to remount theme styles", error);
+}
 
 getYapmod().applyCss = applyCss;
 

@@ -171,7 +171,8 @@ function readModeTokens(
   css: string,
   mode: "dark" | "light",
 ): Record<string, string> {
-  const found: Record<string, string> = {};
+  // Collect the CSS bodies of all rules scoped to the target mode.
+  let combined = "";
   const pattern = /([^{}]+)\{([^{}]*)\}/g;
 
   let match = pattern.exec(css);
@@ -181,25 +182,14 @@ function readModeTokens(
     const body = match[2];
 
     if (selector.includes(`data-yapmod-mode="${mode}"`)) {
-      for (const declaration of body.split(";")) {
-        const [name, ...rest] = declaration.split(":");
-
-        if (rest.length === 0) {
-          continue;
-        }
-
-        const key = name.trim().replace(/^--/, "");
-
-        if (key.startsWith("ym-") && TOKEN_NAMES.has(key.slice(3))) {
-          found[key.slice(3)] = rest.join(":").trim();
-        }
-      }
+      combined += body + ";";
     }
 
     match = pattern.exec(css);
   }
 
-  return found;
+  // Delegate token extraction to the shared parser.
+  return readDeclarations(combined).tokens;
 }
 
 /**

@@ -211,6 +211,48 @@ function notify(): void {
 }
 
 /**
+ * Reads the current state and applies the correct data-theme attribute.
+ *
+ * All watchers delegate to this function so there is a single source of
+ * truth for what data-theme should be, instead of each watcher doing its
+ * own partial apply.
+ */
+function applyCurrentState(): void {
+  const theme = activeTheme;
+  const store = getYapmod().store;
+  const root = document.documentElement;
+
+  if (theme) {
+    // An active theme determines the mode.
+    const mode = resolveMode(theme);
+    if (root.dataset.theme !== mode) {
+      root.dataset.theme = mode;
+    }
+    writeStorage(HOST_THEME_KEY, mode);
+  } else {
+    // No active theme — follow the mode setting, which can follow the system.
+    const mode = store?.get<string>("theme_mode", "system");
+
+    if (mode === "light" || mode === "dark") {
+      if (root.dataset.theme !== mode) {
+        root.dataset.theme = mode;
+      }
+      writeStorage(HOST_THEME_KEY, mode);
+    } else {
+      // System mode — let the host app's own prefers-color-scheme take effect.
+      if (root.dataset.theme !== null && root.dataset.theme !== "") {
+        delete root.dataset.theme;
+      }
+      try {
+        window.localStorage.removeItem(HOST_THEME_KEY);
+      } catch {
+        // The root attribute still updates the current page.
+      }
+    }
+  }
+}
+
+/**
  * Watches the system, so a theme that follows it stays in step.
  */
 function watchSystem(): void {
@@ -222,6 +264,8 @@ function watchSystem(): void {
 
       if (theme) {
         render(theme);
+      } else {
+        applyCurrentState();
       }
     });
   } catch {
@@ -242,22 +286,7 @@ function watchStore(): void {
     if (theme) {
       render(theme);
     } else {
-      // Yapper's own styles follow the root data-theme attribute. Remove a
-      // forced mode for system mode so prefers-color-scheme can take effect.
-      const mode = store?.get<string>("theme_mode", "system");
-      const root = document.documentElement;
-
-      if (mode === "light" || mode === "dark") {
-        root.dataset.theme = mode;
-        writeStorage(HOST_THEME_KEY, mode);
-      } else {
-        delete root.dataset.theme;
-        try {
-          window.localStorage.removeItem(HOST_THEME_KEY);
-        } catch {
-          // The root attribute still updates the current page.
-        }
-      }
+      applyCurrentState();
     }
   });
 
@@ -301,18 +330,7 @@ function watchStore(): void {
  */
 function watchHost(): void {
   const observer = new MutationObserver(() => {
-    const theme = activeTheme;
-
-    if (!theme) {
-      return;
-    }
-
-    const mode = resolveMode(theme);
-    const root = document.documentElement;
-
-    if (root.dataset.theme !== mode) {
-      root.dataset.theme = mode;
-    }
+    applyCurrentState();
   });
 
   observer.observe(document.documentElement, {

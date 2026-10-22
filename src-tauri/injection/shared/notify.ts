@@ -9,7 +9,6 @@ type NotificationOptions = {
   icon?: string;
   tag?: string;
   silent?: boolean;
-  data?: unknown;
 };
 
 /**

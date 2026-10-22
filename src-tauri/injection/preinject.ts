@@ -20,16 +20,58 @@ yapmod.internalHost = payload.internalHost;
 yapmod.release = payload.release;
 yapmod.changelog = getChangelog;
 
-installModalApi();
-installStore();
-installSettingsApi();
+try {
+  installModalApi();
+} catch (error) {
+  console.error("[yapmod] failed to install modal API", error);
+}
+
+try {
+  installStore();
+} catch (error) {
+  console.error("[yapmod] failed to install store", error);
+}
+
+try {
+  installSettingsApi();
+} catch (error) {
+  console.error("[yapmod] failed to install settings API", error);
+}
 
 // The theme is applied before anything else, so the app never shows the
 // wrong colours while it loads.
-installThemeEngine(payload.theme ?? null);
+try {
+  installThemeEngine(payload.theme ?? null);
+} catch (error) {
+  console.error("[yapmod] failed to install theme engine", error);
+}
 
-installDefaultSettings();
-installThemeSettings();
-installDesktopBridge();
-installNotificationApi();
-installExternalLinks();
+try {
+  installDefaultSettings();
+} catch (error) {
+  console.error("[yapmod] failed to install default settings", error);
+}
+
+try {
+  installThemeSettings();
+} catch (error) {
+  console.error("[yapmod] failed to install theme settings", error);
+}
+
+try {
+  installDesktopBridge();
+} catch (error) {
+  console.error("[yapmod] failed to install desktop bridge", error);
+}
+
+try {
+  installNotificationApi();
+} catch (error) {
+  console.error("[yapmod] failed to install notification API", error);
+}
+
+try {
+  installExternalLinks();
+} catch (error) {
+  console.error("[yapmod] failed to install external links", error);
+}

@@ -121,3 +121,82 @@ export function whenBodyReady(callback: () => void): void {
     once: true,
   });
 }
+
+/**
+ * Runs each teardown function, catching errors so one failure doesn't
+ * prevent the rest from running.
+ */
+export function safeTeardown(teardowns: (() => void)[]): void {
+  for (const teardown of teardowns) {
+    try {
+      teardown();
+    } catch (error) {
+      console.error("[yapmod] teardown failed", error);
+    }
+  }
+}
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+function svgElement(tag: string): SVGElement {
+  return document.createElementNS(SVG_NS, tag);
+}
+
+/**
+ * Creates an SVG icon with a single path shape.
+ */
+export function createSvgIcon(
+  className: string,
+  width: number,
+  path: string,
+): SVGElement {
+  const svg = svgElement("svg");
+
+  svg.setAttribute("class", className);
+  svg.setAttribute("width", String(width));
+  svg.setAttribute("height", String(width));
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+
+  const shape = svgElement("path");
+
+  shape.setAttribute("fill", "currentColor");
+  shape.setAttribute("d", path);
+
+  svg.appendChild(shape);
+
+  return svg;
+}
+
+/**
+ * Creates a checkmark icon used in dropdown selections.
+ */
+export function createSvgCheck(): SVGElement {
+  const svg = svgElement("svg");
+
+  svg.setAttribute("class", "dd-check");
+  svg.setAttribute("width", "18");
+  svg.setAttribute("height", "18");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+
+  const circle = svgElement("circle");
+
+  circle.setAttribute("cx", "12");
+  circle.setAttribute("cy", "12");
+  circle.setAttribute("r", "10");
+  circle.setAttribute("fill", "currentColor");
+
+  const check = svgElement("path");
+
+  check.setAttribute("d", "m8 12.5 2.6 2.6L16.2 9.4");
+  check.setAttribute("fill", "none");
+  check.setAttribute("stroke", "#fff");
+  check.setAttribute("stroke-width", "2.2");
+  check.setAttribute("stroke-linecap", "round");
+  check.setAttribute("stroke-linejoin", "round");
+
+  svg.append(circle, check);
+
+  return svg;
+}

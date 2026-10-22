@@ -114,6 +114,9 @@ export function installStore(): void {
 
       return () => {
         bucket.delete(listener);
+        if (bucket.size === 0) {
+          listeners.delete(key);
+        }
       };
     },
 
