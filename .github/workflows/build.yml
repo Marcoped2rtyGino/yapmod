@@ -112,8 +112,6 @@ jobs:
 
       - name: Build
         run: pnpm tauri build --target ${{ matrix.target }} --bundles ${{ matrix.bundles }}
-        env:
-          LINUXDEPLOY_EXCLUDED_LIBRARIES: libsystemd.so*;libudev.so*;libdbus-1.so*;libwayland-*.so*;libepoxy.so*;libnghttp2.so*;libxkbcommon.so*;libxcb.so*;libXau.so*;libXdmcp.so*
 
       - name: (Linux) Create portable archive
         if: runner.os == 'Linux'
@@ -147,51 +145,6 @@ jobs:
           name: yapmod-${{ matrix.target }}-rpm
           path: src-tauri/target/${{ matrix.target }}/release/bundle/rpm/*.rpm
           if-no-files-found: error
-
-      - name: (Linux) Fix AppImage wayland libraries
-        if: runner.os == 'Linux'
-        run: |
-          APPIMAGE=$(find src-tauri/target/${{ matrix.target }}/release/bundle/appimage -name '*.AppImage' | head -1)
-          bash scripts/fix-appimage.sh "$APPIMAGE"
-
-      - name: (Linux) Verify AppImage excludes wayland libraries
-        if: runner.os == 'Linux'
-        run: |
-          APPIMAGE=$(find src-tauri/target/${{ matrix.target }}/release/bundle/appimage -name '*.AppImage' | head -1)
-          chmod +x "$APPIMAGE"
-          "$APPIMAGE" --appimage-extract > /dev/null 2>&1
-          squashfs_root=squashfs-root
-          test -d "$squashfs_root"
-          EXCLUDED_LIBS=(
-            libsystemd.so*
-            libudev.so*
-            libdbus-1.so*
-            libwayland-client.so.0
-            libwayland-cursor.so.0
-            libwayland-egl.so.1
-            libwayland-server.so.0
-            libxkbcommon.so.0
-            libxcb.so.1
-            libxcb-render.so.0
-            libxcb-shm.so.0
-            libXau.so.6
-            libXdmcp.so.6
-            libepoxy.so*
-            libnghttp2.so*
-          )
-          FOUND=0
-          for lib in "${EXCLUDED_LIBS[@]}"; do
-            if find "$squashfs_root"/usr/lib/ -name "$lib" -print -quit 2>/dev/null | grep -q .; then
-              echo "ERROR: Found bundled library matching $lib"
-              FOUND=1
-            fi
-          done
-          if [ "$FOUND" -eq 1 ]; then
-            echo "AppImage still bundles wayland/display libraries!"
-            exit 1
-          fi
-          echo "AppImage verification passed — no bundled wayland libraries."
-          rm -rf "$squashfs_root"
 
       - name: (Linux) Upload .AppImage
         if: runner.os == 'Linux'
