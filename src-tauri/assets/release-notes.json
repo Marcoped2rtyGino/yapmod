@@ -157,4 +157,18 @@
         ]
       }
     ]
-  }}
+  },
+  "0.4.1": {
+    "title": "Theme mode fixes",
+    "date": "2026-10-22",
+    "summary": "Switch between light, dark, and system mode without reloading the app.",
+    "sections": [
+      {
+        "heading": "Fixed",
+        "items": [
+          "Theme mode changes now update the active styles without reloading the page."
+        ]
+      }
+    ]
+  }
+}

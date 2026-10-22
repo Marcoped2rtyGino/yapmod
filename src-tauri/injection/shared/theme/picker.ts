@@ -649,10 +649,6 @@ function createThemeSection(): SettingsSection {
         ],
         onChange: (value) => {
           store?.set("theme_mode", value);
-
-          if (themeApi?.active) {
-            themeApi.apply(themeApi.active);
-          }
         },
         ariaLabel: "Mode",
       });

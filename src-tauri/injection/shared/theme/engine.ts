@@ -12,8 +12,6 @@ const THEME_STYLE_ID = "yapmod-theme-styles";
  * choice is what keeps the theme from flashing on the first frame.
  */
 const HOST_THEME_KEY = "yapper-theme";
-const HOST_NEW_LOOK_KEY = "yapper:newLook";
-const HOST_NEW_LOOK_CLASS = "new-look";
 
 export type ThemeListener = (theme: ThemeBundle | null) => void;
 
@@ -34,7 +32,6 @@ let activeTheme: ThemeBundle | null = null;
 const listeners = new Set<ThemeListener>();
 
 let savedHostTheme: string | null = null;
-let savedHostNewLook: string | null = null;
 let hostStateSaved = false;
 
 function readStorage(key: string): string | null {
@@ -108,7 +105,6 @@ function saveHostState(): void {
 
   hostStateSaved = true;
   savedHostTheme = readStorage(HOST_THEME_KEY);
-  savedHostNewLook = readStorage(HOST_NEW_LOOK_KEY);
 }
 
 /**
@@ -126,38 +122,23 @@ function restoreHostState(): void {
   } else {
     writeStorage(HOST_THEME_KEY, savedHostTheme);
   }
-
-  if (savedHostNewLook === null) {
-    removeStorage(HOST_NEW_LOOK_KEY);
-  } else {
-    writeStorage(HOST_NEW_LOOK_KEY, savedHostNewLook);
-  }
-
-  const root = document.documentElement;
-
-  if (savedHostNewLook === "off") {
-    root.classList.remove(HOST_NEW_LOOK_CLASS);
-  } else {
-    root.classList.add(HOST_NEW_LOOK_CLASS);
-  }
 }
 
 /**
  * Tells the wrapped app about the theme.
  *
  * The mode is mirrored into the app's own storage, because the app applies
- * it while it loads. The new look is switched off: it brings its own
- * palette, and a theme and the new look do not mix.
+ * it while it loads.
  */
 function applyToHost(mode: ResolvedMode): void {
   const root = document.documentElement;
 
-  root.dataset.theme = mode;
+  if (root.dataset.theme !== mode) {
+    root.dataset.theme = mode;
+  }
   writeStorage(HOST_THEME_KEY, mode);
 
   saveHostState();
-  writeStorage(HOST_NEW_LOOK_KEY, "off");
-  root.classList.remove(HOST_NEW_LOOK_CLASS);
 }
 
 /**
@@ -249,10 +230,74 @@ function watchSystem(): void {
 }
 
 /**
+ * Watches theme settings. A mode change replaces only yapmod's theme style
+ * element and updates the host mode attribute; it never reloads the page.
+ */
+function watchStore(): void {
+  const store = getYapmod().store;
+
+  store?.onChange("theme_mode", () => {
+    const theme = activeTheme;
+
+    if (theme) {
+      render(theme);
+    } else {
+      // Yapper's own styles follow the root data-theme attribute. Remove a
+      // forced mode for system mode so prefers-color-scheme can take effect.
+      const mode = store?.get<string>("theme_mode", "system");
+      const root = document.documentElement;
+
+      if (mode === "light" || mode === "dark") {
+        root.dataset.theme = mode;
+        writeStorage(HOST_THEME_KEY, mode);
+      } else {
+        delete root.dataset.theme;
+        try {
+          window.localStorage.removeItem(HOST_THEME_KEY);
+        } catch {
+          // The root attribute still updates the current page.
+        }
+      }
+    }
+  });
+
+  store?.onChange("theme_id", async () => {
+    // When theme_id changes, reload the theme so it renders with the
+    // current mode setting and proper data-theme attribute.
+    const id = store?.get<string>("theme_id", "") ?? "";
+
+    if (id) {
+      try {
+        const themes = await invokeCommand<ThemeBundle[]>("list_themes");
+        const theme = themes.find((t) => t.id === id);
+
+        if (theme) {
+          activeTheme = theme;
+          render(theme);
+          notify();
+        } else {
+          // Theme not found, fall back to host state
+          activeTheme = null;
+          render(null);
+          notify();
+        }
+      } catch {
+        // If we can't list themes, keep the current state
+      }
+    } else {
+      // No theme selected, restore host state
+      activeTheme = null;
+      render(null);
+      notify();
+    }
+  });
+}
+
+/**
  * Keeps the app from taking the theme back.
  *
  * The app applies its own theme while it runs, so the mode is put back
- * whenever it changes, and the new look is removed again.
+ * whenever it changes.
  */
 function watchHost(): void {
   const observer = new MutationObserver(() => {
@@ -268,15 +313,11 @@ function watchHost(): void {
     if (root.dataset.theme !== mode) {
       root.dataset.theme = mode;
     }
-
-    if (root.classList.contains(HOST_NEW_LOOK_CLASS)) {
-      root.classList.remove(HOST_NEW_LOOK_CLASS);
-    }
   });
 
   observer.observe(document.documentElement, {
     attributes: true,
-    attributeFilter: ["data-theme", "class"],
+    attributeFilter: ["data-theme"],
   });
 }
 
@@ -334,5 +375,6 @@ export function installThemeEngine(theme: ThemeBundle | null): void {
   }
 
   watchSystem();
+  watchStore();
   watchHost();
 }
