@@ -17,8 +17,8 @@ chmod +x "$APPIMAGE"
 cd "$APPIMAGE_DIR"
 "$APPIMAGE" --appimage-extract > /dev/null 2>&1
 
-# The .AppDir is created in the same directory as the AppImage
-APPDIR="${APPIMAGE_DIR}/${APPIMAGE_BASE}.AppDir"
+# The AppImage runtime extracts to squashfs-root in the current directory.
+APPDIR="${APPIMAGE_DIR}/squashfs-root"
 
 if [ ! -d "$APPDIR" ]; then
   echo "ERROR: Could not find .AppDir after extraction"
