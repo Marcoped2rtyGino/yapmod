@@ -143,5 +143,10 @@
         ]
       }
     ]
+  },
+  "0.4.0": {
+    "title": "Tray support",
+    "date": "2026-10-22",
+    "summary": "yapmod can keep running in the menu bar or system tray when you close the window."
   }
 }
