@@ -47,8 +47,5 @@ jobs:
       - name: Install modules
         run: pnpm install --frozen-lockfile
 
-      - name: Typecheck client scripts
-        run: pnpm client:check
-
-      - name: Build client bundles
-        run: pnpm client:build
+      - name: Check client scripts and bundles
+        run: pnpm check:client

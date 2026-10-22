@@ -23,6 +23,7 @@ To work on yapmod you need a normal desktop development setup: Node.js for the i
 git clone https://github.com/ilyeshdz/yapmod
 cd yapmod
 pnpm install
+pnpm --dir web install --frozen-lockfile --ignore-workspace
 ```
 
 ## Develop
@@ -45,6 +46,18 @@ Restart the app after an edit to load the rebuilt bundle. The watcher rebuilds f
 
 ## Build
 
+Run the project checks before opening a pull request:
+
+```bash
+pnpm check
+```
+
+This type-checks and bundles the client, checks Rust formatting and lints,
+verifies generated types, and checks and builds the website. Install the
+website dependencies once with the setup command above. You can run the
+checks for one part of the project with `pnpm check:client`, `pnpm check:rust`,
+or `pnpm check:web`.
+
 ```bash
 # type-check the injected client
 pnpm client:check
@@ -65,6 +78,10 @@ pnpm tauri build
 | `pnpm client:dev` | Watches and rebuilds the client bundle for local development. |
 | `pnpm client:check` | Type-checks the injected client. |
 | `pnpm types:generate` | Regenerates the TypeScript types from the Rust types. |
+| `pnpm check` | Runs the full client, Rust, generated-type, and website checks. |
+| `pnpm check:client` | Type-checks and bundles the injected client. |
+| `pnpm check:rust` | Checks Rust formatting, lints, and generated types. |
+| `pnpm check:web` | Type-checks and builds the website. |
 
 The website in `web/` is a separate Astro project. Run these commands from that directory:
 

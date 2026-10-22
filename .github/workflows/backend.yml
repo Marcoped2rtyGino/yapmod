@@ -45,7 +45,7 @@ jobs:
           rustflags: ''
 
       - name: Rustfmt check
-        run: cargo fmt --manifest-path ./src-tauri/Cargo.toml --all -- --check
+        run: pnpm check:rust:format
 
   clippy:
     runs-on: ${{ matrix.platform }}
@@ -103,7 +103,7 @@ jobs:
         run: pnpm install --frozen-lockfile && pnpm client:build
 
       - name: Clippy check
-        run: cargo clippy --manifest-path ./src-tauri/Cargo.toml --locked --all-targets -- -D warnings
+        run: pnpm check:rust:clippy
 
       - name: Check the generated types
-        run: node scripts/generate-types.mjs --check
+        run: pnpm check:types

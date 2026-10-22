@@ -7,7 +7,14 @@
     "client:build": "node client/build.mjs",
     "client:dev": "node client/build.mjs --watch",
     "client:check": "tsc -p client/tsconfig.json",
-    "types:generate": "node scripts/generate-types.mjs"
+    "types:generate": "node scripts/generate-types.mjs",
+    "check": "pnpm check:client && pnpm check:rust && pnpm check:web",
+    "check:client": "pnpm client:check && pnpm client:build",
+    "check:rust": "pnpm check:rust:format && pnpm check:rust:clippy && pnpm check:types",
+    "check:rust:format": "cargo fmt --manifest-path ./src-tauri/Cargo.toml --all -- --check",
+    "check:rust:clippy": "cargo clippy --manifest-path ./src-tauri/Cargo.toml --locked --all-targets -- -D warnings",
+    "check:types": "node scripts/generate-types.mjs --check",
+    "check:web": "pnpm --dir web check && pnpm --dir web build"
   },
   "dependencies": {
     "@tauri-apps/api": "^2"
