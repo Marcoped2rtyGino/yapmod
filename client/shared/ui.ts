@@ -1,18 +1,49 @@
+const pendingStyles = new Map<string, string>();
+let headObserver: MutationObserver | null = null;
+
+function flushPendingStyles(): void {
+  if (!document.head) {
+    return;
+  }
+
+  headObserver?.disconnect();
+  headObserver = null;
+
+  const styles = [...pendingStyles];
+  pendingStyles.clear();
+
+  for (const [id, css] of styles) {
+    upsertStyle(id, css);
+  }
+}
+
 export function upsertStyle(
   id: string,
   css: string,
 ): HTMLStyleElement | null {
-  const parent = document.head ?? document.documentElement;
+  const parent = document.head;
 
   if (!parent) {
+    pendingStyles.set(id, css);
+
+    if (!headObserver) {
+      headObserver = new MutationObserver(flushPendingStyles);
+      headObserver.observe(document, { childList: true, subtree: true });
+    }
+
     return null;
   }
+
+  pendingStyles.delete(id);
 
   let style = document.getElementById(id) as HTMLStyleElement | null;
 
   if (!style) {
     style = document.createElement("style");
     style.id = id;
+  }
+
+  if (style.parentElement !== parent) {
     parent.appendChild(style);
   }
 
@@ -22,7 +53,9 @@ export function upsertStyle(
 }
 
 export function ensureStyle(id: string, css: string): void {
-  if (!document.getElementById(id)) {
+  const style = document.getElementById(id);
+
+  if (!style || (document.head && style.parentElement !== document.head)) {
     upsertStyle(id, css);
   }
 }
