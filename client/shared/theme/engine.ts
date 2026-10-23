@@ -36,7 +36,7 @@ let hostStateSaved = false;
 
 /**
  * Initialization scripts can run before the browser has created <html>.
- * Watch the Document itself until it exists, then run the deferred work.
+ * Wait for the document lifecycle to advance, then run the deferred work.
  */
 function whenDocumentElementReady(callback: () => void): void {
   if (document.documentElement) {
@@ -44,16 +44,18 @@ function whenDocumentElementReady(callback: () => void): void {
     return;
   }
 
-  const observer = new MutationObserver(() => {
+  const check = (): void => {
     if (!document.documentElement) {
       return;
     }
 
-    observer.disconnect();
+    document.removeEventListener("readystatechange", check);
+    document.removeEventListener("DOMContentLoaded", check);
     callback();
-  });
+  };
 
-  observer.observe(document, { childList: true });
+  document.addEventListener("readystatechange", check);
+  document.addEventListener("DOMContentLoaded", check);
 }
 
 function readStorage(key: string): string | null {
