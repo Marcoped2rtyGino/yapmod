@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       nightly:
-        description: Build with a unique prerelease version
+        description: Build with a unique nightly version
         required: false
         type: boolean
         default: false
@@ -12,6 +12,9 @@ on:
       app_version:
         description: Version embedded in the app
         value: ${{ jobs.prepare.outputs.app_version }}
+      wix_version:
+        description: Numeric version used by the Windows MSI installer
+        value: ${{ jobs.prepare.outputs.wix_version }}
 
 env:
   CARGO_INCREMENTAL: 0
@@ -21,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       app_version: ${{ steps.version.outputs.app_version }}
+      wix_version: ${{ steps.version.outputs.wix_version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,23 +37,43 @@ jobs:
         run: |
           current_version=$(sed -n 's/^version = "\([^"]*\)"/\1/p' src-tauri/Cargo.toml | head -n 1)
 
+          if [[ ! "$current_version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "The app version must be stable SemVer before building: $current_version" >&2
+            exit 1
+          fi
+
+          major="${BASH_REMATCH[1]}"
+          minor="${BASH_REMATCH[2]}"
+          patch="${BASH_REMATCH[3]}"
+
+          if (( 10#$major > 255 || 10#$minor > 255 || 10#$patch > 65535 )); then
+            echo "The app version exceeds the Windows MSI version limits: $current_version" >&2
+            exit 1
+          fi
+
           if [ "$NIGHTLY" = "true" ]; then
-            if [[ "$current_version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-              major="${BASH_REMATCH[1]}"
-              minor="${BASH_REMATCH[2]}"
-              patch="${BASH_REMATCH[3]}"
-            else
-              echo "The app version must be stable SemVer before creating a nightly version: $current_version" >&2
+            if [[ ! "$RUN_NUMBER" =~ ^[0-9]+$ ]] || (( 10#$RUN_NUMBER < 1 || 10#$RUN_NUMBER > 65534 )); then
+              echo "The GitHub Actions run number must be between 1 and 65534 for MSI nightlies: $RUN_NUMBER" >&2
               exit 1
             fi
 
             next_patch=$((10#$patch + 1))
-            app_version="${major}.${minor}.${next_patch}-nightly.$(date -u +%Y%m%d).${RUN_NUMBER}"
+            if (( next_patch > 65535 )); then
+              echo "The nightly version exceeds the Windows MSI patch limit: ${major}.${minor}.${next_patch}" >&2
+              exit 1
+            fi
+
+            app_version="${major}.${minor}.${next_patch}+nightly.$(date -u +%Y%m%d).${RUN_NUMBER}"
+            wix_version="${major}.${minor}.${next_patch}.${RUN_NUMBER}"
           else
             app_version="$current_version"
+            # Reserve the highest MSI build component so a stable release can
+            # upgrade over every nightly built from the same app version.
+            wix_version="${major}.${minor}.${patch}.65535"
           fi
 
           echo "app_version=$app_version" >> "$GITHUB_OUTPUT"
+          echo "wix_version=$wix_version" >> "$GITHUB_OUTPUT"
           echo "Building yapmod v$app_version"
 
   build:
@@ -102,7 +126,8 @@ jobs:
       - name: Set app version
         env:
           APP_VERSION: ${{ needs.prepare.outputs.app_version }}
-        run: node scripts/set-app-version.mjs "$APP_VERSION"
+          MSI_VERSION: ${{ needs.prepare.outputs.wix_version }}
+        run: node scripts/set-app-version.mjs
 
       - name: Prepare apt archive cache
         if: matrix.platform == 'ubuntu-22.04'
