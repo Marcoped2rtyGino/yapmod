@@ -98,6 +98,11 @@ fn pinned_public_key() -> Option<Vec<u8>> {
     (key.len() == 32).then_some(key)
 }
 
+fn is_nightly_app(app_version: &str) -> bool {
+    Version::parse(app_version)
+        .is_ok_and(|version| version.build.as_str().split('.').next() == Some("nightly"))
+}
+
 fn read_state(dir: &Path) -> State {
     let path = state_path(dir);
     let backup = path.with_extension("old");
@@ -245,6 +250,12 @@ pub fn for_launch(app: &AppHandle, app_version: &str) -> LaunchSelection {
         bundle: None,
         status: ClientUpdateLaunchStatus::default(),
     };
+    // Nightly builds embed the client from the same commit as the desktop
+    // app. A cached stable-channel bundle must not replace that code.
+    if is_nightly_app(app_version) {
+        return fallback();
+    }
+
     let Ok(dir) = updates_dir(app) else {
         return fallback();
     };
@@ -385,6 +396,10 @@ async fn download_limited(
 /// Checks the fixed static feed and stores a compatible bundle for next
 /// launch. All downloaded bytes are authenticated before they are persisted.
 pub async fn check_for_client_update(app: AppHandle, app_version: String) -> Result<(), String> {
+    if is_nightly_app(&app_version) {
+        return Ok(());
+    }
+
     let Some(encoded_key) = CLIENT_UPDATE_PUBLIC_KEY.filter(|key| !key.trim().is_empty()) else {
         return Ok(());
     };
@@ -483,6 +498,10 @@ pub async fn prepare_client_update(
     }
 
     let app_version = app.package_info().version.to_string();
+    if is_nightly_app(&app_version) {
+        return Ok(None);
+    }
+
     check_for_client_update(app.clone(), app_version.clone()).await?;
 
     let dir = updates_dir(&app)?;
