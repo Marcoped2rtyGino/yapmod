@@ -2,7 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use tauri::{
-    WebviewUrl, WebviewWindowBuilder,
+    Manager, WebviewUrl, WebviewWindowBuilder,
     webview::{PageLoadEvent, PermissionKind, PermissionResponse},
 };
 use tauri_plugin_opener::OpenerExt;
@@ -31,6 +31,9 @@ fn main() {
             notify::request_notification_permission,
             update::check_for_update,
             client_update::confirm_client_update,
+            client_update::get_client_update_launch_status,
+            client_update::prepare_client_update,
+            window::restart_app,
             injection::release::get_changelog,
             theme::list_themes,
             theme::themes_folder,
@@ -50,14 +53,16 @@ fn main() {
             let url = WebviewUrl::External("https://www.yapin.gg/?auth=in".parse()?);
             let title = format!("Yapmod - v{}", app.package_info().version);
             let active_theme = theme::active_theme(app.handle(), &config);
-            let client_bundle = client_update::for_launch(app.handle(), &version);
+            let launch_selection = client_update::for_launch(app.handle(), &version);
+            app.manage(launch_selection.status.clone());
+            let client_bundle = launch_selection.bundle;
             let preinject = injection::preinject(
                 &config,
                 first_run,
                 &version,
                 previous_version.as_deref(),
                 active_theme,
-                client_bundle.as_ref().map(|(bundle, _)| bundle),
+                client_bundle.as_ref(),
             );
             let win = WebviewWindowBuilder::new(app, "main", url)
                 .title(title)
@@ -114,13 +119,8 @@ fn main() {
                             return;
                         }
 
-                        let bundle = client_bundle.as_ref().map(|(bundle, _)| bundle);
-                        let confirm_trial = client_bundle
-                            .as_ref()
-                            .is_some_and(|(_, is_trial)| *is_trial);
-                        if let Err(error) =
-                            webview.eval(injection::postinject(bundle, confirm_trial))
-                        {
+                        let bundle = client_bundle.as_ref();
+                        if let Err(error) = webview.eval(injection::postinject(bundle)) {
                             eprintln!("failed to inject postinject script: {error}");
                         }
                     }
@@ -137,16 +137,6 @@ fn main() {
             let win = win.build()?;
             window::install_close_handler(&win);
             tray::install(app.handle(), &config);
-
-            let app_handle = app.handle().clone();
-            let app_version = version.clone();
-            tauri::async_runtime::spawn(async move {
-                if let Err(error) =
-                    client_update::check_for_client_update(app_handle, app_version).await
-                {
-                    eprintln!("client update check failed: {error}");
-                }
-            });
 
             Ok(())
         })

@@ -44,6 +44,14 @@ pnpm client:dev
 
 Restart the app after an edit to load the rebuilt bundle. The watcher rebuilds files only; it does not hot-swap code into a running app.
 
+To preview the client-update prompt without a signed update feed, start a debug build with the local test switch:
+
+```bash
+YAPMOD_TEST_CLIENT_UPDATE=1 pnpm tauri dev
+```
+
+This shows a simulated `local-test` update so you can try **Later**, the reminder, and **Restart now**. It does not install a client bundle. The switch is ignored by release builds; quit the app and start it again without the variable to return to normal update checks.
+
 ## Build
 
 Run the project checks before opening a pull request:

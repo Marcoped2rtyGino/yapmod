@@ -204,7 +204,7 @@ export function installDefaultSettings(): void {
       id: "auto_update",
       label: "Check for updates automatically",
       description:
-        "Look for new yapmod versions when the app starts and show the update window.",
+        "Look for YAPmod app and client updates when the app starts and show update prompts.",
       fallback: true,
     }),
     createToggle({

@@ -17,6 +17,17 @@ pub fn show_main(app: &AppHandle) {
     let _ = window.set_focus();
 }
 
+/// Restarts the full desktop process so staged client bundles are loaded.
+#[tauri::command]
+pub fn restart_app(app: AppHandle) {
+    std::thread::spawn(move || {
+        // Let Tauri send the command response before it tears down the IPC
+        // connection as part of restarting the process.
+        std::thread::sleep(std::time::Duration::from_millis(150));
+        app.restart();
+    });
+}
+
 /// Keeps the app running in the tray when the window is closed.
 ///
 /// Closing the window only hides it, so the page stays loaded and messages

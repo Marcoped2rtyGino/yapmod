@@ -44,6 +44,25 @@ struct State {
     trial_started: bool,
 }
 
+#[derive(Debug, Clone, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ClientUpdateLaunchStatus {
+    pub trial: bool,
+    pub rolled_back: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ClientUpdateInfo {
+    pub current_version: String,
+    pub latest_version: String,
+}
+
+pub struct LaunchSelection {
+    pub bundle: Option<ClientBundle>,
+    pub status: ClientUpdateLaunchStatus,
+}
+
 fn updates_dir(app: &AppHandle) -> Result<PathBuf, String> {
     app.path()
         .app_config_dir()
@@ -221,10 +240,19 @@ fn verified_bundle(
 
 /// Selects a cached last-known-good bundle or marks a pending bundle as the
 /// one-launch trial. A still-pending trial on the next launch is rolled back.
-pub fn for_launch(app: &AppHandle, app_version: &str) -> Option<(ClientBundle, bool)> {
-    let dir = updates_dir(app).ok()?;
-    fs::create_dir_all(&dir).ok()?;
+pub fn for_launch(app: &AppHandle, app_version: &str) -> LaunchSelection {
+    let fallback = || LaunchSelection {
+        bundle: None,
+        status: ClientUpdateLaunchStatus::default(),
+    };
+    let Ok(dir) = updates_dir(app) else {
+        return fallback();
+    };
+    if fs::create_dir_all(&dir).is_err() {
+        return fallback();
+    }
     let mut state = read_state(&dir);
+    let mut status = ClientUpdateLaunchStatus::default();
 
     if let Some(sequence) = state.pending_sequence {
         if state.last_good_sequence == Some(sequence) {
@@ -238,23 +266,36 @@ pub fn for_launch(app: &AppHandle, app_version: &str) -> Option<(ClientBundle, b
             state.pending_sequence = None;
             state.trial_started = false;
             let _ = write_state(&dir, &state);
+            status.rolled_back = true;
         } else if let Some(bundle) = read_bundle(&dir, sequence, app_version) {
             state.trial_started = true;
             if write_state(&dir, &state).is_ok() {
-                return Some((bundle, true));
+                status.trial = true;
+                return LaunchSelection {
+                    bundle: Some(bundle),
+                    status,
+                };
             }
         } else {
             remove_cached_bundle(&dir, sequence);
             state.pending_sequence = None;
             state.trial_started = false;
             let _ = write_state(&dir, &state);
+            status.rolled_back = true;
         }
     }
 
-    state
+    let bundle = state
         .last_good_sequence
-        .and_then(|sequence| read_bundle(&dir, sequence, app_version))
-        .map(|bundle| (bundle, false))
+        .and_then(|sequence| read_bundle(&dir, sequence, app_version));
+    LaunchSelection { bundle, status }
+}
+
+#[tauri::command]
+pub fn get_client_update_launch_status(
+    status: tauri::State<'_, ClientUpdateLaunchStatus>,
+) -> ClientUpdateLaunchStatus {
+    status.inner().clone()
 }
 
 /// Called only after postinject has completed on an approved Yapper origin.
@@ -424,6 +465,38 @@ pub async fn check_for_client_update(app: AppHandle, app_version: String) -> Res
     }
 
     Ok(())
+}
+
+/// Downloads and stages the newest compatible client bundle for the next
+/// process launch, then returns its display versions to the injected UI.
+#[tauri::command]
+pub async fn prepare_client_update(
+    app: AppHandle,
+    current_client_version: String,
+) -> Result<Option<ClientUpdateInfo>, String> {
+    #[cfg(debug_assertions)]
+    if std::env::var_os("YAPMOD_TEST_CLIENT_UPDATE").is_some() {
+        return Ok(Some(ClientUpdateInfo {
+            current_version: current_client_version,
+            latest_version: "local-test".to_string(),
+        }));
+    }
+
+    let app_version = app.package_info().version.to_string();
+    check_for_client_update(app.clone(), app_version.clone()).await?;
+
+    let dir = updates_dir(&app)?;
+    let state = read_state(&dir);
+    let Some(sequence) = state.pending_sequence else {
+        return Ok(None);
+    };
+    let bundle = read_bundle(&dir, sequence, &app_version)
+        .ok_or_else(|| "the staged client update could not be verified".to_string())?;
+
+    Ok(Some(ClientUpdateInfo {
+        current_version: current_client_version,
+        latest_version: bundle.client_version,
+    }))
 }
 
 fn hex_digest(value: &str) -> Option<Vec<u8>> {

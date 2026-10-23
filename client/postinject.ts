@@ -1,10 +1,22 @@
 import logoSvg from "./assets/icon.svg";
 import type { ReleaseInfo, YapmodModal } from "./shared/types";
 import { createReleaseBody, createReleaseHeader } from "./shared/release";
-import { checkForUpdate, showUpdateAvailableModal } from "./shared/update";
+import {
+  checkForUpdate,
+  prepareClientUpdate,
+  showClientUpdateOutcomeModal,
+  showClientUpdateReadyModal,
+  showUpdateAvailableModal,
+} from "./shared/update";
 import { upsertStyle, createElement } from "./shared/ui";
 import { remountThemeStyles } from "./shared/theme/engine";
 import { getYapmod } from "./shared/scope";
+import { invokeCommand } from "./shared/tauri";
+import type {
+  ClientUpdateInfo,
+  ClientUpdateLaunchStatus,
+  UpdateInfo,
+} from "./shared/types";
 
 const STYLE_ELEMENT_ID = "yapmod-injected-styles";
 const TOPBAR_SELECTOR = ".topbar";
@@ -214,34 +226,97 @@ function scheduleReleaseModal(): Promise<void> {
 }
 
 /**
- * Looks for a newer yapmod version and shows the update modal when there is
- * one.
- *
- * yapmod never updates itself, so the modal only points the user to the
- * website. The check runs right away, but the modal waits for the release
- * notes, so the two never stack up.
+ * Checks both update channels while the app is open. Client updates are staged
+ * in the background and can be applied with one real process restart. Prompts
+ * wait for release notes and for each other so they never stack.
  */
-async function scheduleUpdateModal(releaseDone: Promise<void>): Promise<void> {
+async function scheduleUpdatePrompts(releaseDone: Promise<void>): Promise<void> {
   const yapmod = getYapmod();
+  let launchStatus: ClientUpdateLaunchStatus | null = null;
+  let clientOutcome: { version: string; rolledBack: boolean } | null = null;
+
+  try {
+    launchStatus = await invokeCommand<ClientUpdateLaunchStatus>(
+      "get_client_update_launch_status",
+    );
+  } catch (error) {
+    console.error("[yapmod] could not read the client update launch status", error);
+  }
+
+  if (launchStatus?.trial) {
+    try {
+      await invokeCommand<void>("confirm_client_update");
+      clientOutcome = {
+        version: yapmod.clientVersion ?? "unknown",
+        rolledBack: false,
+      };
+    } catch (error) {
+      console.error("[yapmod] client update confirmation failed", error);
+    }
+  } else if (launchStatus?.rolledBack) {
+    clientOutcome = {
+      version: yapmod.clientVersion ?? "unknown",
+      rolledBack: true,
+    };
+  }
+
+  const autoUpdate = yapmod.store?.get<boolean>("auto_update", true) !== false;
+  let desktopUpdate: UpdateInfo | null = null;
+  let clientUpdate: ClientUpdateInfo | null = null;
+
+  if (autoUpdate) {
+    const desktopCheck = checkForUpdate();
+    const clientCheck =
+      launchStatus && !launchStatus.trial && !launchStatus.rolledBack
+        ? prepareClientUpdate(yapmod.clientVersion ?? "unknown")
+        : Promise.resolve(null);
+    const [desktopResult, clientResult] = await Promise.all([
+      desktopCheck,
+      clientCheck,
+    ]);
+    desktopUpdate = desktopResult;
+    clientUpdate = clientResult;
+  }
+
+  await releaseDone;
 
   if (!yapmod.modal) {
     return;
   }
 
-  if (yapmod.store?.get<boolean>("auto_update", true) === false) {
-    return;
+  if (clientOutcome) {
+    const key = `yapmod-client-update-outcome:${clientOutcome.rolledBack ? "rollback" : "applied"}:${clientOutcome.version}`;
+    let seen = false;
+    try {
+      seen = sessionStorage.getItem(key) === "1";
+      sessionStorage.setItem(key, "1");
+    } catch {}
+
+    if (!seen) {
+      const modal = showClientUpdateOutcomeModal(
+        clientOutcome.version,
+        clientOutcome.rolledBack,
+      );
+      if (modal) await modal.closed;
+    }
   }
 
-  const info = await checkForUpdate();
-
-  if (!info?.available) {
-    return;
+  if (clientUpdate) {
+    try {
+      const modal = showClientUpdateReadyModal(clientUpdate);
+      if (modal) await modal.closed;
+    } catch (error) {
+      console.error("[yapmod] failed to show the client update prompt", error);
+    }
   }
 
-  await releaseDone;
+  if (!desktopUpdate?.available) {
+    return;
+  }
 
   try {
-    showUpdateAvailableModal(info);
+    const modal = showUpdateAvailableModal(desktopUpdate);
+    if (modal) await modal.closed;
   } catch (error) {
     console.error("[yapmod] failed to show the update modal", error);
   }
@@ -269,4 +344,4 @@ try {
 
 getYapmod().applyCss = applyCss;
 
-void scheduleUpdateModal(scheduleReleaseModal());
+void scheduleUpdatePrompts(scheduleReleaseModal());

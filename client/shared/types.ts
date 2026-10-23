@@ -20,6 +20,16 @@ export type {
   UpdateInfo,
 };
 
+export type ClientUpdateInfo = {
+  currentVersion: string;
+  latestVersion: string;
+};
+
+export type ClientUpdateLaunchStatus = {
+  trial: boolean;
+  rolledBack: boolean;
+};
+
 export type ModalSize = "sm" | "md" | "lg" | "xl";
 
 export type ModalCloseReason =
