@@ -238,7 +238,9 @@ function handleNavClick(event: Event): void {
 }
 
 function bindNav(element: HTMLElement): void {
-  if (element.dataset.yapmodNavBound) {
+  // The dataset value is an empty string, which is falsy, so check for the
+  // attribute's presence instead. Otherwise every re-attach adds a listener.
+  if (element.hasAttribute("data-yapmod-nav-bound")) {
     return;
   }
 
@@ -301,7 +303,12 @@ function observeNav(element: HTMLElement): void {
       const button = record.target;
 
       if (button === entry.button) {
-        button.classList.add("active");
+        // Only write when the class actually changes: adding a class that is
+        // already there still queues a mutation record, which would retrigger
+        // this observer forever and freeze the page.
+        if (!button.classList.contains("active")) {
+          button.classList.add("active");
+        }
       } else if (button.classList.contains("active")) {
         button.classList.remove("active");
       }
