@@ -1,7 +1,7 @@
 ---
 title: Troubleshooting
 group: Start
-order: 3
+order: 4
 eyebrow: Start here
 description: Fixes for the problems people hit most often.
 ---
