@@ -7,12 +7,12 @@ import { invokeCommand } from "./tauri";
 import { openExternally } from "./links";
 import { createElement } from "./ui";
 import { getYapmod } from "./scope";
+import { showBanner } from "./banner";
 
 const WEBSITE_URL = "https://ilyeshdz.github.io/yapmod";
 const UPDATE_MODAL_ID = "yapmod-update-available";
 const UPDATE_MODAL_TITLE = "Update available";
-const CLIENT_UPDATE_MODAL_ID = "yapmod-client-update-ready";
-const CLIENT_UPDATE_REMINDER_ID = "yapmod-client-update-reminder";
+const CLIENT_UPDATE_BANNER_ID = "yapmod-client-update-ready";
 
 export async function prepareClientUpdate(
   currentClientVersion: string,
@@ -121,111 +121,36 @@ export function showUpdateAvailableModal(info: UpdateInfo): YapmodModal | null {
   });
 }
 
-/** Shows the restart prompt once the signed client bundle is fully staged. */
-export function showClientUpdateReadyModal(
-  info: ClientUpdateInfo,
-): YapmodModal | null {
-  const modal = getYapmod().modal;
-  if (!modal) return null;
-
-  return modal.show({
-    id: CLIENT_UPDATE_MODAL_ID,
-    title: "YAPmod update ready",
-    description: `Client v${info.latestVersion} is ready. Restart YAPmod to apply it; any active call will disconnect.`,
-    content: createUpdateContent({
-      current_version: info.currentVersion,
-      latest_version: info.latestVersion,
-      available: true,
-    }),
-    size: "sm",
-    className: "yapmod-update-modal",
-    onClose: () => showClientUpdateReminder(info),
-    buttons: [
-      {
-        label: "Restart now",
-        variant: "primary",
-        className: "small",
-        closeOnClick: false,
-        onClick: async (activeModal) => {
-          try {
-            await invokeCommand<void>("restart_app");
-          } catch (error) {
-            console.error("[yapmod] could not restart for the client update", error);
-            activeModal.setDescription(
-              "YAPmod could not restart. Quit it from the menu bar or system tray, then open it again to apply the update.",
-            );
-            return false;
-          }
-        },
+/** Shows a nonblocking restart banner once the signed client bundle is staged. */
+export function showClientUpdateBanner(info: ClientUpdateInfo): void {
+  showBanner({
+    id: CLIENT_UPDATE_BANNER_ID,
+    message: `yapmod client v${info.latestVersion} is ready. Restart to apply; active calls will disconnect.`,
+    action: {
+      label: "Restart",
+      onClick: async (banner) => {
+        try {
+          await invokeCommand<void>("restart_app");
+        } catch (error) {
+          console.error(
+            "[yapmod] could not restart for the client update",
+            error,
+          );
+          banner.setMessage(
+            "yapmod could not restart. Quit from the menu bar or system tray to apply the update.",
+            "warning",
+          );
+        }
       },
-      {
-        label: "Later",
-        variant: "native",
-        className: "small ghost",
-      },
-    ],
+    },
   });
 }
 
-/** Keeps a deferred update visible without blocking the app. */
-export function showClientUpdateReminder(info: ClientUpdateInfo): void {
-  const existing = document.getElementById(CLIENT_UPDATE_REMINDER_ID);
-  if (existing) return;
-
-  const message = createElement("span", {
-    text: `YAPmod client v${info.latestVersion} is ready to apply.`,
-  });
-  const reminder = createElement("aside", {
-    className: "yapmod-client-update-reminder",
-    attrs: { id: CLIENT_UPDATE_REMINDER_ID, role: "status" },
-    children: [
-      message,
-      createElement("button", {
-        className: "yapmod-client-update-restart",
-        text: "Restart",
-        attrs: { type: "button" },
-        on: {
-          click: () => {
-            void invokeCommand<void>("restart_app").catch((error: unknown) => {
-              console.error("[yapmod] could not restart for the client update", error);
-              message.textContent =
-                "Could not restart YAPmod. Quit it from the menu bar or system tray to apply the update.";
-            });
-          },
-        },
-      }),
-      createElement("button", {
-        className: "yapmod-client-update-dismiss",
-        text: "×",
-        attrs: { type: "button", "aria-label": "Dismiss update reminder" },
-        on: { click: () => reminder.remove() },
-      }),
-    ],
-  });
-
-  document.body.appendChild(reminder);
-}
-
-export function showClientUpdateOutcomeModal(
-  version: string,
-  rolledBack: boolean,
-): YapmodModal | null {
-  const modal = getYapmod().modal;
-  if (!modal) return null;
-
-  return modal.show({
-    id: "yapmod-client-update-outcome",
-    title: rolledBack ? "Update restored" : "YAPmod updated",
-    description: rolledBack
-      ? "The new client update did not start correctly, so YAPmod restored the previous version. You can keep using the app."
-      : `YAPmod client v${version} is now running.`,
-    size: "sm",
-    buttons: [
-      {
-        label: "Done",
-        variant: "secondary",
-        className: "small",
-      },
-    ],
+/** Reports a failed client update without blocking the app. */
+export function showClientUpdateOutcomeBanner(version: string): void {
+  showBanner({
+    id: `yapmod-client-update-rollback:${version}`,
+    tone: "warning",
+    message: `The client update did not start correctly, so yapmod restored the previous version. You can keep using the app.`,
   });
 }

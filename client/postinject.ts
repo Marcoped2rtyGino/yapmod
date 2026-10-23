@@ -1,11 +1,8 @@
-import logoSvg from "./assets/icon.svg";
-import type { ReleaseInfo, YapmodModal } from "./shared/types";
-import { createReleaseBody, createReleaseHeader } from "./shared/release";
 import {
   checkForUpdate,
   prepareClientUpdate,
-  showClientUpdateOutcomeModal,
-  showClientUpdateReadyModal,
+  showClientUpdateOutcomeBanner,
+  showClientUpdateBanner,
   showUpdateAvailableModal,
 } from "./shared/update";
 import { upsertStyle, createElement } from "./shared/ui";
@@ -21,8 +18,6 @@ import type {
 const STYLE_ELEMENT_ID = "yapmod-injected-styles";
 const TOPBAR_SELECTOR = ".topbar";
 const WINDOW_CONTROLS_ATTRIBUTE = "data-yapmod-window-controls";
-const RELEASE_SEEN_KEY = "yapmod-release-seen";
-const RELEASE_LOGO = logoSvg.replace(/fill="#F67567"/g, 'fill="currentColor"');
 
 function applyCss(css: string): void {
   upsertStyle(STYLE_ELEMENT_ID, css);
@@ -150,166 +145,14 @@ function installTopbarWindowControls(): void {
   });
 }
 
-function createReleaseHero(release: ReleaseInfo): HTMLElement {
-  return createElement("div", {
-    className: "yapmod-release-hero",
-    attrs: { "aria-hidden": "true" },
-    children: [
-      createElement("div", {
-        className: "yapmod-release-logo",
-        html: RELEASE_LOGO,
-      }),
-      createReleaseHeader(release, {
-        className: "yapmod-release-hero-text",
-        versionClassName: "yapmod-release-version",
-        dateClassName: "yapmod-release-date",
-        eyebrow: release.firstRun ? "Welcome" : "What's new",
-        eyebrowClassName: "yapmod-release-eyebrow",
-      }),
-    ],
-  });
-}
-
-function createReleaseContent(release: ReleaseInfo): HTMLElement {
-  const fallback = release.firstRun
-    ? "Thanks for giving yapmod a try. It's still early in development, so expect a few rough edges while it grows."
-    : `yapmod has been updated to v${release.version}.`;
-
-  return createReleaseBody(release.notes, fallback);
-}
-
-function releaseDescription(release: ReleaseInfo): string {
-  if (release.firstRun) {
-    return "A quick look at what's included in this release.";
-  }
-
-  if (release.previousVersion) {
-    return `Updated from v${release.previousVersion} to v${release.version}.`;
-  }
-
-  return `You're now running v${release.version}.`;
-}
-
-function shouldShowRelease(release: ReleaseInfo): boolean {
-  if (!release.version) {
-    return false;
-  }
-
-  if (!release.firstRun && release.previousVersion === release.version) {
-    return false;
-  }
-
-  try {
-    if (
-      sessionStorage.getItem(`${RELEASE_SEEN_KEY}:${release.version}`) === "1"
-    ) {
-      return false;
-    }
-  } catch {}
-
-  return true;
-}
-
-function showReleaseModal(release: ReleaseInfo): YapmodModal | null {
-  const modalApi = getYapmod().modal;
-
-  if (!shouldShowRelease(release) || !modalApi) {
-    return null;
-  }
-
-  const modal = modalApi.show({
-    id: "yapmod-release-notes",
-    title: release.firstRun ? "Welcome to yapmod" : "What's new",
-    description: releaseDescription(release),
-    content: createReleaseContent(release),
-    size: "md",
-    className: "yapmod-release-modal",
-    buttons: [
-      {
-        label: release.firstRun ? "Let's go" : "Got it",
-        variant: "secondary",
-        className: "small",
-        autofocus: true,
-      },
-    ],
-  });
-
-  modal.dialog.insertBefore(createReleaseHero(release), modal.dialog.firstChild);
-
-  try {
-    sessionStorage.setItem(`${RELEASE_SEEN_KEY}:${release.version}`, "1");
-  } catch {}
-
-  return modal;
-}
-
-function scheduleReleaseModal(): Promise<void> {
-  const yapmod = getYapmod();
-  const release = yapmod.release;
-
-  if (!release || !yapmod.modal || !shouldShowRelease(release)) {
-    return Promise.resolve();
-  }
-
-  return new Promise<void>((resolve) => {
-    const show = (): void => {
-      let modal: YapmodModal | null = null;
-
-      try {
-        modal = showReleaseModal(release);
-      } catch (error) {
-        console.error("[yapmod] failed to show the release notes modal", error);
-      }
-
-      if (!modal) {
-        resolve();
-        return;
-      }
-
-      void modal.closed.then(
-        () => resolve(),
-        () => resolve(),
-      );
-    };
-
-    const appMounted = (): boolean =>
-      document.querySelector(".app, .auth-wrap, main") !== null;
-
-    if (appMounted()) {
-      window.setTimeout(show, 200);
-      return;
-    }
-
-    const observer = new MutationObserver(() => {
-      if (!appMounted()) {
-        return;
-      }
-
-      observer.disconnect();
-      window.setTimeout(show, 200);
-    });
-
-    observer.observe(document.documentElement, {
-      childList: true,
-      subtree: true,
-    });
-
-    window.setTimeout(() => {
-      observer.disconnect();
-      show();
-    }, 8000);
-  });
-}
-
 /**
  * Checks both update channels while the app is open. Client updates are staged
- * in the background and can be applied with one real process restart. Prompts
- * wait for release notes and for each other so they never stack.
+ * in the background and can be applied with one real process restart.
  */
-async function scheduleUpdatePrompts(releaseDone: Promise<void>): Promise<void> {
+async function scheduleUpdatePrompts(): Promise<void> {
   const yapmod = getYapmod();
   let launchStatus: ClientUpdateLaunchStatus | null = null;
-  let clientOutcome: { version: string; rolledBack: boolean } | null = null;
+  let rollbackVersion: string | null = null;
 
   try {
     launchStatus = await invokeCommand<ClientUpdateLaunchStatus>(
@@ -322,18 +165,11 @@ async function scheduleUpdatePrompts(releaseDone: Promise<void>): Promise<void> 
   if (launchStatus?.trial) {
     try {
       await invokeCommand<void>("confirm_client_update");
-      clientOutcome = {
-        version: yapmod.clientVersion ?? "unknown",
-        rolledBack: false,
-      };
     } catch (error) {
       console.error("[yapmod] client update confirmation failed", error);
     }
   } else if (launchStatus?.rolledBack) {
-    clientOutcome = {
-      version: yapmod.clientVersion ?? "unknown",
-      rolledBack: true,
-    };
+    rollbackVersion = yapmod.clientVersion ?? "unknown";
   }
 
   const autoUpdate = yapmod.store?.get<boolean>("auto_update", true) !== false;
@@ -354,47 +190,32 @@ async function scheduleUpdatePrompts(releaseDone: Promise<void>): Promise<void> 
     clientUpdate = clientResult;
   }
 
-  await releaseDone;
-
-  if (!yapmod.modal) {
-    return;
+  if (desktopUpdate?.available && yapmod.modal) {
+    try {
+      const modal = showUpdateAvailableModal(desktopUpdate);
+      if (modal) await modal.closed;
+    } catch (error) {
+      console.error("[yapmod] failed to show the update modal", error);
+    }
   }
 
-  if (clientOutcome) {
-    const key = `yapmod-client-update-outcome:${clientOutcome.rolledBack ? "rollback" : "applied"}:${clientOutcome.version}`;
+  if (rollbackVersion) {
+    const key = `yapmod-client-update-outcome:rollback:${rollbackVersion}`;
     let seen = false;
     try {
       seen = sessionStorage.getItem(key) === "1";
       sessionStorage.setItem(key, "1");
     } catch {}
 
-    if (!seen) {
-      const modal = showClientUpdateOutcomeModal(
-        clientOutcome.version,
-        clientOutcome.rolledBack,
-      );
-      if (modal) await modal.closed;
-    }
+    if (!seen) showClientUpdateOutcomeBanner(rollbackVersion);
   }
 
   if (clientUpdate) {
     try {
-      const modal = showClientUpdateReadyModal(clientUpdate);
-      if (modal) await modal.closed;
+      showClientUpdateBanner(clientUpdate);
     } catch (error) {
-      console.error("[yapmod] failed to show the client update prompt", error);
+      console.error("[yapmod] failed to show the client update banner", error);
     }
-  }
-
-  if (!desktopUpdate?.available) {
-    return;
-  }
-
-  try {
-    const modal = showUpdateAvailableModal(desktopUpdate);
-    if (modal) await modal.closed;
-  } catch (error) {
-    console.error("[yapmod] failed to show the update modal", error);
   }
 }
 
@@ -420,4 +241,4 @@ try {
 
 getYapmod().applyCss = applyCss;
 
-void scheduleUpdatePrompts(scheduleReleaseModal());
+void scheduleUpdatePrompts();

@@ -134,8 +134,7 @@
   font-weight: 600;
 }
 
-/* The changelog intentionally uses Yapper's plain list treatment rather
-   than the richer release-modal presentation below. */
+/* Changelog */
 .yapmod-settings-panel .yapmod-changelog-release .yapmod-release-summary {
   margin: 0 0 8px;
   color: inherit;
@@ -176,78 +175,6 @@
 
 .yapmod-changelog-empty {
   color: var(--text-muted);
-}
-
-/* Release notes modal */
-
-.yapmod-release-modal {
-  overflow: hidden;
-}
-
-.yapmod-release-hero {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  min-height: 76px;
-  padding: 14px 18px;
-  color: var(--ym-on-accent, var(--on-accent, #fff));
-  background: linear-gradient(
-    135deg,
-    var(--ym-brand, #f67567) 0%,
-    var(--ym-brand-2, #ff8a70) 55%,
-    var(--ym-brand-3, #ffb25f) 100%
-  );
-}
-
-.yapmod-release-logo {
-  flex: none;
-  width: 46px;
-  color: var(--ym-on-accent, var(--on-accent, #fff));
-  filter: drop-shadow(0 4px 10px rgba(94, 23, 16, 0.2));
-}
-
-.yapmod-release-logo svg {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.yapmod-release-hero-text {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-}
-
-.yapmod-release-eyebrow {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  opacity: 0.82;
-}
-
-.yapmod-release-version {
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.yapmod-release-date {
-  font-size: 12px;
-  opacity: 0.82;
-}
-
-.yapmod-release-modal .yapmod-modal-close {
-  color: var(--ym-on-accent, var(--on-accent, #fff));
-  background: transparent;
-  opacity: 0.8;
-}
-
-.yapmod-release-modal .yapmod-modal-close:hover,
-.yapmod-release-modal .yapmod-modal-close:focus-visible {
-  background: var(--ym-brand-hover, rgba(77, 22, 15, 0.14));
-  opacity: 1;
 }
 
 .yapmod-release-summary {
@@ -298,11 +225,6 @@
   background: var(--ym-accent, var(--tint-a, #5865f2));
 }
 
-.yapmod-release-modal .yapmod-modal-foot {
-  padding: 0 18px 16px;
-  border-top: 0;
-}
-
 /* Update modal */
 
 .yapmod-update-content {
@@ -340,63 +262,77 @@
   border-top: 0;
 }
 
-.yapmod-client-update-reminder {
-  position: fixed;
-  right: 20px;
-  bottom: 20px;
-  z-index: 2147483500;
+.yapmod-banner-region {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  max-width: min(560px, calc(100vw - 32px));
-  padding: 12px 14px;
-  border: 1px solid var(--ym-border, var(--border, rgba(255, 255, 255, 0.12)));
-  border-radius: 12px;
-  background: var(--ym-bg-elev, var(--bg-elev, #25262b));
-  color: var(--ym-text, var(--text, #f4f4f5));
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
-  font-size: 13px;
+  flex-direction: column;
 }
 
-.yapmod-client-update-restart,
-.yapmod-client-update-dismiss {
+.yapmod-banner-region:empty {
+  display: none;
+}
+
+.yapmod-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 28px;
+  padding: 2px 10px;
+  background: var(--ym-brand, var(--accent, var(--tint-a, #f67567)));
+  color: var(--ym-on-accent, var(--on-accent, #fff));
+  font-size: 12px;
+}
+
+.yapmod-banner[data-tone="warning"] {
+  background: var(--ym-danger, var(--danger, #b54735));
+}
+
+.yapmod-banner-message {
+  min-width: 0;
+  line-height: 1.4;
+}
+
+.yapmod-banner-action,
+.yapmod-banner-dismiss {
   flex: 0 0 auto;
-  border: 0;
-  border-radius: 7px;
-  padding: 6px 9px;
-  background: var(--ym-accent, var(--tint-a, #5865f2));
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  padding: 2px 7px;
+  background: color-mix(in srgb, currentColor 12%, transparent);
   color: var(--ym-on-accent, var(--on-accent, #fff));
   cursor: pointer;
   font: inherit;
   font-weight: 600;
 }
 
-.yapmod-client-update-dismiss {
-  padding: 3px 7px;
+.yapmod-banner-action:hover,
+.yapmod-banner-dismiss:hover {
+  background: color-mix(in srgb, currentColor 22%, transparent);
+}
+
+.yapmod-banner-action:focus-visible,
+.yapmod-banner-dismiss:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.yapmod-banner-dismiss {
+  border-color: transparent;
+  padding: 1px 5px;
   background: transparent;
-  color: inherit;
-  font-size: 18px;
+  font-size: 17px;
+  line-height: 1;
   opacity: 0.7;
 }
 
-.yapmod-client-update-dismiss:hover {
+.yapmod-banner-dismiss:hover {
   opacity: 1;
 }
 
 @media (max-width: 520px) {
-  .yapmod-release-hero {
-    min-height: 72px;
-    padding: 12px 16px;
-  }
-
-  .yapmod-release-logo {
-    width: 42px;
-  }
-
-  .yapmod-client-update-reminder {
-    right: 10px;
-    bottom: 10px;
-    gap: 8px;
-    padding: 10px;
+  .yapmod-banner {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    padding-inline: 8px;
   }
 }

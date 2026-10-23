@@ -48,4 +48,4 @@ chmod +x yapmod*.AppImage
 
 To update, install a newer build over the existing one. Your settings are kept.
 
-YAPmod also downloads signed client updates in the background. When one is ready, choose **Restart now** to apply it, or choose **Later** to keep using the app with a restart reminder. This updates the client without reinstalling the desktop app.
+yapmod also downloads signed client updates in the background. When one is ready, choose **Restart now** to apply it, or choose **Later** to keep using the app with a restart reminder. This updates the client without reinstalling the desktop app.

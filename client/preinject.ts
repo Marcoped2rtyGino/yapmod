@@ -1,4 +1,5 @@
 import { installModalApi } from "./shared/modal";
+import { installBannerApi } from "./shared/banner";
 import { installSettingsApi } from "./shared/settings";
 import { installStore } from "./shared/store";
 import { installDefaultSettings } from "./shared/defaults";
@@ -25,6 +26,12 @@ try {
   installModalApi();
 } catch (error) {
   console.error("[yapmod] failed to install modal API", error);
+}
+
+try {
+  installBannerApi();
+} catch (error) {
+  console.error("[yapmod] failed to install banner API", error);
 }
 
 try {

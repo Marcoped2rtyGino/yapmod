@@ -8,6 +8,7 @@ import type {
   UpdateInfo,
 } from "../generated/types";
 import type { DesktopBridge } from "./desktop";
+import type { YapmodBannerApi } from "./banner";
 import type { YapmodThemeApi } from "./theme/engine";
 
 export type {
@@ -223,6 +224,7 @@ export type YapmodGlobal = {
   release?: ReleaseInfo;
   changelog?: () => Promise<ReleaseEntry[]>;
   applyCss?: (css: string) => void;
+  banner?: YapmodBannerApi;
   modal?: YapmodModalApi;
   settings?: YapmodSettingsApi;
   store?: YapmodStoreApi;
