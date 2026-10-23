@@ -79,6 +79,9 @@ function createWindowControls(): HTMLElement {
   const controls = document.createElement("div");
   controls.className = "yapmod-window-controls";
   controls.setAttribute(WINDOW_CONTROLS_ATTRIBUTE, "");
+  // The topbar is a deep drag region. Explicitly opt this subtree out so
+  // Tauri does not treat the window buttons as drag gestures on Windows.
+  controls.setAttribute("data-tauri-drag-region", "false");
   controls.setAttribute("role", "group");
   controls.setAttribute("aria-label", "Window controls");
 
