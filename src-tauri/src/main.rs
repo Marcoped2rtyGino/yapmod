@@ -34,6 +34,9 @@ fn main() {
             client_update::get_client_update_launch_status,
             client_update::prepare_client_update,
             window::restart_app,
+            window::minimize_main_window,
+            window::toggle_main_window_maximize,
+            window::close_main_window,
             injection::release::get_changelog,
             theme::list_themes,
             theme::themes_folder,
@@ -133,6 +136,9 @@ fn main() {
                 win.hidden_title(true)
                     .title_bar_style(tauri::TitleBarStyle::Overlay)
             };
+
+            #[cfg(target_os = "windows")]
+            let win = win.decorations(false);
 
             let win = win.build()?;
             window::install_close_handler(&win);

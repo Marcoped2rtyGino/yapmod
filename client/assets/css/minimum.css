@@ -1,5 +1,66 @@
 /* Settings sections */
 
+.topbar[data-tauri-drag-region="deep"],
+.topbar[data-tauri-drag-region="deep"] * {
+  cursor: default !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+.yapmod-window-controls {
+  z-index: 10;
+  display: flex;
+  flex: none;
+  align-items: stretch;
+  height: 100%;
+  color: var(--text, currentColor);
+  user-select: none;
+}
+
+.yapmod-window-controls-overlay {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+}
+
+.yapmod-window-control {
+  display: grid !important;
+  width: 46px !important;
+  min-width: 46px !important;
+  height: 100% !important;
+  place-items: center !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  cursor: default !important;
+  opacity: 0.82;
+}
+
+.yapmod-window-control:hover,
+.yapmod-window-control:focus-visible {
+  background: color-mix(in srgb, currentColor 12%, transparent) !important;
+  opacity: 1;
+}
+
+.yapmod-window-control-close:hover,
+.yapmod-window-control-close:focus-visible {
+  background: #e81123 !important;
+  color: #fff !important;
+}
+
+.yapmod-window-control svg {
+  display: block;
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
 .settings.yapmod-section-active > .settings-main:not(.yapmod-settings-panel) {
   display: none;
 }

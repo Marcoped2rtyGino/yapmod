@@ -20,6 +20,7 @@ import type {
 
 const STYLE_ELEMENT_ID = "yapmod-injected-styles";
 const TOPBAR_SELECTOR = ".topbar";
+const WINDOW_CONTROLS_ATTRIBUTE = "data-yapmod-window-controls";
 const RELEASE_SEEN_KEY = "yapmod-release-seen";
 const RELEASE_LOGO = logoSvg.replace(/fill="#F67567"/g, 'fill="currentColor"');
 
@@ -51,24 +52,99 @@ function markTopbarDraggable(topbar: HTMLElement): void {
   }
 }
 
-/**
- * Yapper's topbar is the titlebar on macOS, so it has to drag the window.
- * The topbar is painted after the app boots, hence the observer.
- */
-function ensureTopbarDraggable(): void {
-  if (getYapmod().os !== "macos") {
+type WindowAction = "minimize" | "maximize" | "close";
+
+const WINDOW_ACTIONS: Array<{
+  action: WindowAction;
+  label: string;
+  command: string;
+  icon: string;
+}> = [
+  {
+    action: "minimize",
+    label: "Minimize window",
+    command: "minimize_main_window",
+    icon: '<path d="M5 12h14" />',
+  },
+  {
+    action: "maximize",
+    label: "Maximize or restore window",
+    command: "toggle_main_window_maximize",
+    icon: '<rect x="6.5" y="6.5" width="11" height="11" />',
+  },
+  {
+    action: "close",
+    label: "Close window",
+    command: "close_main_window",
+    icon: '<path d="m7 7 10 10M17 7 7 17" />',
+  },
+];
+
+function createWindowControls(): HTMLElement {
+  const controls = document.createElement("div");
+  controls.className = "yapmod-window-controls";
+  controls.setAttribute(WINDOW_CONTROLS_ATTRIBUTE, "");
+  controls.setAttribute("role", "group");
+  controls.setAttribute("aria-label", "Window controls");
+
+  for (const { action, label, command, icon } of WINDOW_ACTIONS) {
+    const button = document.createElement("button");
+    button.className = `yapmod-window-control yapmod-window-control-${action}`;
+    button.type = "button";
+    button.title = label;
+    button.setAttribute("aria-label", label);
+    button.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${icon}</svg>`;
+    button.addEventListener("pointerdown", (event) => event.stopPropagation());
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      void invokeCommand<void>(command).catch((error: unknown) => {
+        console.error(`[yapmod] could not ${action} the window`, error);
+      });
+    });
+    controls.append(button);
+  }
+
+  return controls;
+}
+
+function addWindowControls(topbar: HTMLElement): void {
+  if (topbar.querySelector(`[${WINDOW_CONTROLS_ATTRIBUTE}]`)) {
     return;
   }
 
-  const markTopbars = (): void => {
+  const controls = createWindowControls();
+  if (window.getComputedStyle(topbar).position === "static") {
+    topbar.style.position = "relative";
+  }
+  controls.classList.add("yapmod-window-controls-overlay");
+
+  topbar.append(controls);
+}
+
+/**
+ * Yapper's topbar is a drag region on macOS and hosts custom window controls
+ * on Windows. It is painted after the app boots, hence the observer.
+ */
+function installTopbarWindowControls(): void {
+  const os = getYapmod().os;
+  if (os !== "macos" && os !== "windows") {
+    return;
+  }
+
+  const integrateTopbars = (): void => {
     document
       .querySelectorAll<HTMLElement>(TOPBAR_SELECTOR)
-      .forEach(markTopbarDraggable);
+      .forEach((topbar) => {
+        markTopbarDraggable(topbar);
+        if (os === "windows") {
+          addWindowControls(topbar);
+        }
+      });
   };
 
-  markTopbars();
+  integrateTopbars();
 
-  new MutationObserver(markTopbars).observe(document.documentElement, {
+  new MutationObserver(integrateTopbars).observe(document.documentElement, {
     childList: true,
     subtree: true,
   });
@@ -329,9 +405,9 @@ try {
 }
 
 try {
-  ensureTopbarDraggable();
+  installTopbarWindowControls();
 } catch (error) {
-  console.error("[yapmod] failed to make the topbar draggable", error);
+  console.error("[yapmod] failed to install titlebar controls", error);
 }
 
 // The stylesheet of the theme is moved behind the stylesheets of the app,

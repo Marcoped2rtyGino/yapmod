@@ -17,6 +17,34 @@ pub fn show_main(app: &AppHandle) {
     let _ = window.set_focus();
 }
 
+/// Minimizes the main window from its injected titlebar controls.
+#[tauri::command]
+pub fn minimize_main_window(app: AppHandle) {
+    if let Some(window) = app.get_webview_window(MAIN_WINDOW) {
+        let _ = window.minimize();
+    }
+}
+
+/// Maximizes the main window, or restores it when it is already maximized.
+#[tauri::command]
+pub fn toggle_main_window_maximize(app: AppHandle) {
+    if let Some(window) = app.get_webview_window(MAIN_WINDOW) {
+        let _ = if window.is_maximized().unwrap_or(false) {
+            window.unmaximize()
+        } else {
+            window.maximize()
+        };
+    }
+}
+
+/// Closes the main window from its injected titlebar controls.
+#[tauri::command]
+pub fn close_main_window(app: AppHandle) {
+    if let Some(window) = app.get_webview_window(MAIN_WINDOW) {
+        let _ = window.close();
+    }
+}
+
 /// Restarts the full desktop process so staged client bundles are loaded.
 #[tauri::command]
 pub fn restart_app(app: AppHandle) {
