@@ -17,7 +17,25 @@ pub fn compare_versions(left: &str, right: &str) -> Ordering {
     let right_semver = Version::parse(right.trim().trim_start_matches('v'));
 
     if let (Ok(left), Ok(right)) = (&left_semver, &right_semver) {
-        return left.cmp_precedence(right);
+        let precedence = left.cmp_precedence(right);
+        if precedence == Ordering::Equal {
+            // Nightly versions use SemVer build metadata to stay compatible
+            // with Linux package managers. Metadata is normally ignored by
+            // SemVer precedence, but a stable release of the same core version
+            // must still supersede that nightly in the update prompt.
+            let left_is_stable = left.build.is_empty();
+            let right_is_stable = right.build.is_empty();
+            let left_is_nightly = left.build.as_str().starts_with("nightly.");
+            let right_is_nightly = right.build.as_str().starts_with("nightly.");
+
+            if left_is_stable && right_is_nightly {
+                return Ordering::Greater;
+            }
+            if left_is_nightly && right_is_stable {
+                return Ordering::Less;
+            }
+        }
+        return precedence;
     }
 
     let left = parse_version(left);
@@ -41,4 +59,26 @@ pub fn compare_versions(left: &str, right: &str) -> Ordering {
 /// Returns true when `candidate` is a newer version than `current`.
 pub fn is_newer(candidate: &str, current: &str) -> bool {
     compare_versions(candidate, current) == Ordering::Greater
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{compare_versions, is_newer};
+    use std::cmp::Ordering;
+
+    #[test]
+    fn stable_release_supersedes_nightly_with_the_same_core_version() {
+        assert_eq!(
+            compare_versions("0.4.2", "0.4.2+nightly.20261023.12"),
+            Ordering::Greater
+        );
+        assert!(is_newer("0.4.2", "0.4.2+nightly.20261023.12"));
+        assert!(!is_newer("0.4.2+nightly.20261023.12", "0.4.2"));
+    }
+
+    #[test]
+    fn stable_version_comparison_still_uses_semver_precedence() {
+        assert!(is_newer("0.4.2", "0.4.1"));
+        assert!(!is_newer("0.4.1", "0.4.2"));
+    }
 }

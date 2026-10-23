@@ -1,12 +1,35 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
 const version = process.env.APP_VERSION ?? process.argv[2];
+const msiVersion = process.env.MSI_VERSION;
 
 if (
   !version ||
   !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/.test(version)
 ) {
   throw new Error("Set APP_VERSION or pass a valid semantic version as the first argument.");
+}
+
+let tauriConfig;
+if (msiVersion) {
+  const parts = msiVersion.split(".").map(Number);
+  if (
+    parts.length !== 4 ||
+    parts.some((part) => !Number.isInteger(part) || part < 0) ||
+    parts[0] > 255 ||
+    parts[1] > 255 ||
+    parts[2] > 65535 ||
+    parts[3] > 65535
+  ) {
+    throw new Error("MSI_VERSION must be a numeric major.minor.patch.build version within MSI limits.");
+  }
+
+  const configPath = "src-tauri/tauri.conf.json";
+  tauriConfig = JSON.parse(readFileSync(configPath, "utf8"));
+  tauriConfig.bundle ??= {};
+  tauriConfig.bundle.windows ??= {};
+  tauriConfig.bundle.windows.wix ??= {};
+  tauriConfig.bundle.windows.wix.version = msiVersion;
 }
 
 const manifestPath = "src-tauri/Cargo.toml";
@@ -55,3 +78,6 @@ if (lockMatches !== 1) {
 
 writeFileSync(manifestPath, updatedManifest);
 writeFileSync(lockPath, updatedLock);
+if (tauriConfig) {
+  writeFileSync("src-tauri/tauri.conf.json", `${JSON.stringify(tauriConfig, null, 2)}\n`);
+}
