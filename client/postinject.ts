@@ -3,11 +3,13 @@ import type { ReleaseInfo, YapmodModal } from "./shared/types";
 import { createReleaseBody, createReleaseHeader } from "./shared/release";
 import { checkForUpdate, showUpdateAvailableModal } from "./shared/update";
 import { upsertStyle, createElement } from "./shared/ui";
-import { remountThemeStyles } from "./shared/theme/engine";
+import { remountThemeStyles } from "./shared/theme/styles";
 import { getYapmod } from "./shared/scope";
 
 const STYLE_ELEMENT_ID = "yapmod-injected-styles";
-const DRAG_REGION_ID = "yapmod-drag-region";
+const TOPBAR_SELECTOR = ".topbar";
+const INTERACTIVE_SELECTOR =
+  "a, button, input, select, textarea, [contenteditable='true'], [role='button']";
 const RELEASE_SEEN_KEY = "yapmod-release-seen";
 const RELEASE_LOGO = logoSvg.replace(/fill="#F67567"/g, 'fill="currentColor"');
 
@@ -31,19 +33,28 @@ function applyOsAttribute(): void {
   }
 }
 
-function ensureDragRegion(): void {
-  if (
-    getYapmod().os !== "macos" ||
-    document.getElementById(DRAG_REGION_ID)
-  ) {
+function ensureTopbarDraggable(): void {
+  if (getYapmod().os !== "macos") {
     return;
   }
 
-  const region = createElement("div", {
-    props: { id: DRAG_REGION_ID },
-    attrs: { "data-tauri-drag-region": "" },
+  const markTopbars = (): void => {
+    document.querySelectorAll<HTMLElement>(TOPBAR_SELECTOR).forEach((topbar) => {
+      topbar.setAttribute("data-tauri-drag-region", "");
+      topbar.querySelectorAll<HTMLElement>("*").forEach((element) => {
+        if (!element.closest(INTERACTIVE_SELECTOR)) {
+          element.setAttribute("data-tauri-drag-region", "");
+        }
+      });
+    });
+  };
+
+  markTopbars();
+
+  new MutationObserver(markTopbars).observe(document.documentElement, {
+    childList: true,
+    subtree: true,
   });
-  document.body.appendChild(region);
 }
 
 function createReleaseHero(release: ReleaseInfo): HTMLElement {
@@ -238,17 +249,9 @@ try {
 }
 
 try {
-  ensureDragRegion();
+  ensureTopbarDraggable();
 } catch (error) {
-  console.error("[yapmod] failed to ensure drag region", error);
-}
-
-// The stylesheet of the theme is moved behind the stylesheets of the app,
-// so a theme can style the app with plain CSS.
-try {
-  remountThemeStyles();
-} catch (error) {
-  console.error("[yapmod] failed to remount theme styles", error);
+  console.error("[yapmod] failed to make the topbar draggable", error);
 }
 
 getYapmod().applyCss = applyCss;
