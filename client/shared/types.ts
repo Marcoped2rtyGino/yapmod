@@ -186,6 +186,7 @@ export type SettingsItem =
 export type SettingsSection = {
   id: string;
   label: string;
+  icon?: "monitor" | "palette" | "history";
   group?: string;
   order?: number;
   description?: string;

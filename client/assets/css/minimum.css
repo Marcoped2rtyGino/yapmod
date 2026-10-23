@@ -65,6 +65,16 @@
   display: none;
 }
 
+.settings-nav > button[data-yapmod-section] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-nav > button[data-yapmod-section] > .yapmod-settings-nav-icon {
+  flex: none;
+}
+
 .yapmod-settings-panel[hidden] {
   display: none !important;
 }

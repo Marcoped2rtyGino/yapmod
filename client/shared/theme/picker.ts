@@ -469,6 +469,7 @@ function createThemeSection(): SettingsSection {
   return {
     id: SECTION_ID,
     label: "Themes",
+    icon: "palette",
     group: GROUP_LABEL,
     order: 1,
     description:

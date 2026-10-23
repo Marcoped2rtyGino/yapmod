@@ -145,6 +145,7 @@ function createChangelogSection(): SettingsSection {
   return {
     id: CHANGELOG_SECTION_ID,
     label: "Changelog",
+    icon: "history",
     group: GROUP_LABEL,
     order: 2,
     description: "Every yapmod release, newest first.",
@@ -243,6 +244,7 @@ export function installDefaultSettings(): void {
   const section: SettingsSection = {
     id: SECTION_ID,
     label: GROUP_LABEL,
+    icon: "monitor",
     group: GROUP_LABEL,
     order: 0,
     description: "Options for the yapmod desktop client.",

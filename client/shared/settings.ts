@@ -8,6 +8,47 @@ import { renderSettingsItem } from "./items";
 import { closeAllDropdowns } from "./dropdown";
 import { getYapmod } from "./scope";
 
+type SettingsSectionIcon = NonNullable<SettingsSection["icon"]>;
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+const SECTION_ICON_SHAPES: Record<SettingsSectionIcon, string[]> = {
+  monitor: [
+    "M4 4h16a1 1 0 0 1 1 1v11H3V5a1 1 0 0 1 1-1Z",
+    "M8 20h8",
+    "M12 16v4",
+  ],
+  palette: [
+    "M12 3a9 9 0 1 0 0 18h1.5a1.5 1.5 0 0 0 1.1-2.5 1.5 1.5 0 0 1 1.1-2.5H18a3 3 0 0 0 3-3 10 10 0 0 0-9-10Z",
+    "M7.5 10h.01",
+    "M11 7h.01",
+    "M16 8.5h.01",
+  ],
+  history: ["M3 12a9 9 0 1 0 2.64-6.36L3 8", "M3 3v5h5", "M12 7v5l3 2"],
+};
+
+function createSectionIcon(name: SettingsSectionIcon): SVGElement {
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("class", "yapmod-settings-nav-icon");
+  svg.setAttribute("width", "24");
+  svg.setAttribute("height", "24");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "2");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("aria-hidden", "true");
+
+  for (const path of SECTION_ICON_SHAPES[name]) {
+    const shape = document.createElementNS(SVG_NS, "path");
+    shape.setAttribute("d", path);
+    svg.append(shape);
+  }
+
+  return svg;
+}
+
 const ACTIVE_CLASS = "yapmod-section-active";
 const PANEL_CLASS = "yapmod-settings-panel";
 const NAV_ATTRIBUTE = "data-yapmod-section";
@@ -551,7 +592,10 @@ function register(section: SettingsSection): () => void {
       [NAV_ATTRIBUTE]: section.id,
       "aria-label": section.label,
     },
-    text: section.label,
+    children: [
+      ...(section.icon ? [createSectionIcon(section.icon)] : []),
+      document.createTextNode(section.label),
+    ],
   });
 
   const entry: SectionEntry = {
