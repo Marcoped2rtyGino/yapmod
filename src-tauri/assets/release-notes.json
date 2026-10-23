@@ -170,5 +170,37 @@
         ]
       }
     ]
+  },
+  "0.5.0": {
+    "title": "Independent client updates and Windows fixes",
+    "date": "2026-10-24",
+    "summary": "Yapmod adds support for separately versioned client updates and fixes a Windows startup issue that could keep its settings interface from loading correctly. This release also improves titlebar controls, settings navigation, theme startup, and topbar notifications.",
+    "sections": [
+      {
+        "heading": "Highlights",
+        "items": [
+          "Yapmod now supports client bundles published separately from desktop app releases. When a compatible update is available, it verifies the signed manifest and bundle hash, checks app compatibility, and stages the update. Yapmod then offers a restart to apply it; active calls will disconnect, and an update that fails to start is rolled back.",
+          "Fixed a Windows startup issue that could keep Yapmod's settings interface from loading correctly. Client startup now waits for the document root and head before installing its observers and styles, so the settings interface can integrate with Yapper's page.",
+          "Windows now has minimize, maximize or restore, and close controls in Yapper's top bar. Follow-up fixes restore button clicks and authorize the window commands. The host top bar also serves as the macOS window drag area.",
+          "Compact notification banners now appear in Yapper's top bar."
+        ]
+      },
+      {
+        "heading": "Improvements and fixes",
+        "items": [
+          "Theme initialization waits until the document root exists, and injected styles wait until the page head is available. This makes startup styling more reliable.",
+          "Fixed settings navigation freezes caused by repeated event listeners and a mutation observer loop. Added icons to Yapmod's settings sections.",
+          "Updated Yapmod's Yapper integration for yapin.gg, including the supported bare and www addresses used to open the app and load the injected client."
+        ]
+      },
+      {
+        "heading": "Development and infrastructure",
+        "items": [
+          "Daily and manually triggered nightly builds are now published as rolling prereleases for testing. Nightly builds may be unstable and do not have the stability guarantees of a stable release. They embed the client built from the same source revision.",
+          "Moved the injected client into its own client/ directory and added versioned, signed client release tooling. The embedded client in this release is version 1.0.2; client and desktop app versions remain separate and compatible versions are still required.",
+          "Unified the project checks, shared the app build workflow between stable and nightly packages, and improved portable and Windows MSI version handling. Removed unused Vite scaffolding and updated the website and desktop guides, including the AppImage limitation on some Wayland systems."
+        ]
+      }
+    ]
   }
 }
