@@ -34,6 +34,28 @@ const listeners = new Set<ThemeListener>();
 let savedHostTheme: string | null = null;
 let hostStateSaved = false;
 
+/**
+ * Initialization scripts can run before the browser has created <html>.
+ * Watch the Document itself until it exists, then run the deferred work.
+ */
+function whenDocumentElementReady(callback: () => void): void {
+  if (document.documentElement) {
+    callback();
+    return;
+  }
+
+  const observer = new MutationObserver(() => {
+    if (!document.documentElement) {
+      return;
+    }
+
+    observer.disconnect();
+    callback();
+  });
+
+  observer.observe(document, { childList: true });
+}
+
 function readStorage(key: string): string | null {
   try {
     return window.localStorage.getItem(key);
@@ -163,6 +185,11 @@ function mount(css: string): void {
  * Puts a theme on the page.
  */
 function render(theme: ThemeBundle | null): void {
+  if (!document.documentElement) {
+    whenDocumentElementReady(() => render(activeTheme));
+    return;
+  }
+
   const root = document.documentElement;
 
   if (!theme) {
@@ -218,6 +245,11 @@ function notify(): void {
  * own partial apply.
  */
 function applyCurrentState(): void {
+  if (!document.documentElement) {
+    whenDocumentElementReady(applyCurrentState);
+    return;
+  }
+
   const theme = activeTheme;
   const store = getYapmod().store;
   const root = document.documentElement;
@@ -329,11 +361,18 @@ function watchStore(): void {
  * whenever it changes.
  */
 function watchHost(): void {
+  const root = document.documentElement;
+
+  if (!root) {
+    whenDocumentElementReady(watchHost);
+    return;
+  }
+
   const observer = new MutationObserver(() => {
     applyCurrentState();
   });
 
-  observer.observe(document.documentElement, {
+  observer.observe(root, {
     attributes: true,
     attributeFilter: ["data-theme"],
   });
