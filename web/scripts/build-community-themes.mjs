@@ -14,7 +14,7 @@ const source = join(root, "community-themes");
 const rules = JSON.parse(readFileSync(join(source, "rules.json"), "utf8"));
 const outputDir = process.argv.includes("--dev") ? "public" : "dist";
 const output = resolve(process.cwd(), `${outputDir}/community-themes`);
-const validId = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/;
+const validId = /^(?!\.)[A-Za-z0-9_.-]+$/;
 const validFile = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/;
 const previewExtensions = new Set(rules.previewExtensions);
 
