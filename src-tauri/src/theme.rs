@@ -331,7 +331,7 @@ pub async fn install_community_theme(app: AppHandle, id: String) -> Result<Theme
             fs::write(target.join(preview_file), preview)?;
         }
 
-        read_bundle(&target)
+        read_bundle(&target, true)
             .ok_or_else(|| std::io::Error::other("the downloaded theme could not be read back"))
     })();
 
@@ -371,7 +371,11 @@ fn read_preview(folder: &Path, name: Option<&str>) -> Option<String> {
         _ => return None,
     };
 
-    let bytes = fs::read(folder.join(name)).ok()?;
+    let path = folder.join(name);
+    if fs::metadata(&path).ok()?.len() > MAX_PREVIEW_BYTES as u64 {
+        return None;
+    }
+    let bytes = fs::read(path).ok()?;
 
     Some(format!(
         "data:{mime};base64,{}",
@@ -383,7 +387,7 @@ fn read_preview(folder: &Path, name: Option<&str>) -> Option<String> {
 ///
 /// A folder that cannot be read is not a theme, so this returns nothing
 /// instead of failing.
-fn read_bundle(folder: &Path) -> Option<ThemeBundle> {
+fn read_bundle(folder: &Path, include_preview: bool) -> Option<ThemeBundle> {
     let contents = fs::read_to_string(folder.join(MANIFEST_FILE)).ok()?;
     let manifest: ThemeManifest = serde_json::from_str(&contents).ok()?;
 
@@ -409,7 +413,11 @@ fn read_bundle(folder: &Path) -> Option<ThemeBundle> {
         mode: normalize_mode(manifest.mode.as_deref()),
         tags: manifest.tags,
         css,
-        preview: read_preview(folder, manifest.preview.as_deref()),
+        preview: if include_preview {
+            read_preview(folder, manifest.preview.as_deref())
+        } else {
+            None
+        },
     })
 }
 
@@ -481,7 +489,9 @@ pub fn active_theme(app: &AppHandle, config: &Config) -> Option<ThemeBundle> {
 
     let folder = themes_dir(app).ok()?.join(id);
 
-    read_bundle(&folder)
+    // Only CSS is needed to apply the selected theme before the first frame.
+    // Avoid reading and base64-encoding its preview during webview startup.
+    read_bundle(&folder, false)
 }
 
 /// Every theme that is installed.
@@ -502,7 +512,7 @@ pub fn list_themes(app: AppHandle) -> Result<Vec<ThemeBundle>, String> {
             continue;
         }
 
-        if let Some(bundle) = read_bundle(&path) {
+        if let Some(bundle) = read_bundle(&path, true) {
             themes.push(bundle);
         }
     }
@@ -643,7 +653,7 @@ pub fn install_theme(app: AppHandle, source: String) -> Result<ThemeBundle, Stri
         return Err(error.to_string());
     }
 
-    read_bundle(&target).ok_or_else(|| "the theme could not be read back".to_string())
+    read_bundle(&target, true).ok_or_else(|| "the theme could not be read back".to_string())
 }
 
 /// Removes an installed theme.
@@ -701,7 +711,7 @@ mod tests {
             Some(":root { --ym-accent: #123456; }"),
         );
 
-        let bundle = read_bundle(&folder).unwrap();
+        let bundle = read_bundle(&folder, true).unwrap();
 
         assert_eq!(bundle.id, "midnight");
         assert_eq!(bundle.name, "Midnight");
@@ -716,7 +726,7 @@ mod tests {
     fn ignores_a_folder_without_a_manifest() {
         let folder = theme_folder("broken", "not json", Some(""));
 
-        assert!(read_bundle(&folder).is_none());
+        assert!(read_bundle(&folder, true).is_none());
 
         let _ = fs::remove_dir_all(&folder);
     }
@@ -725,7 +735,7 @@ mod tests {
     fn ignores_a_manifest_without_a_name() {
         let folder = theme_folder("nameless", r#"{"id":"nameless"}"#, Some(""));
 
-        assert!(read_bundle(&folder).is_none());
+        assert!(read_bundle(&folder, true).is_none());
 
         let _ = fs::remove_dir_all(&folder);
     }
