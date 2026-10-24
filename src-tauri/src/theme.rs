@@ -266,8 +266,7 @@ pub async fn list_community_themes() -> Result<Vec<CommunityTheme>, String> {
             continue;
         }
 
-        if theme.name.trim().is_empty()
-            || theme.name.chars().count() > THEME_RULES.max_name_length
+        if theme.name.trim().is_empty() || theme.name.chars().count() > THEME_RULES.max_name_length
         {
             return Err(format!(
                 "community theme `{}` has an invalid name",
@@ -311,7 +310,8 @@ pub async fn install_community_theme(app: AppHandle, id: String) -> Result<Theme
     }
 
     let manifest_path = format!("themes/{id}/{MANIFEST_FILE}");
-    let manifest_bytes = fetch_community_asset(&manifest_path, THEME_RULES.max_manifest_bytes).await?;
+    let manifest_bytes =
+        fetch_community_asset(&manifest_path, THEME_RULES.max_manifest_bytes).await?;
     let manifest: ThemeManifest = serde_json::from_slice(&manifest_bytes)
         .map_err(|error| format!("the community theme manifest is invalid: {error}"))?;
 
