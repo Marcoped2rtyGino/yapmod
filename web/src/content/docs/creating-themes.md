@@ -148,5 +148,5 @@ A few things to keep in mind:
 - The manifest has to be valid JSON, and it needs an `id` and a `name`.
 - The id ends up in a folder name, so it may only use letters, digits, `-`, `_` and `.`, and may not start with a dot.
 - The stylesheet has to be inside the theme folder, and cannot point outside of it.
-- Importing a theme copies the whole folder into the themes folder, under its id. A theme that is already installed under the same id is replaced.
+- Importing a theme copies the whole folder into the themes folder, under its id. If that id is already installed, remove the existing theme before importing it again.
 - A theme is applied as it is. There is no sandbox, and no way to run code from a theme.
