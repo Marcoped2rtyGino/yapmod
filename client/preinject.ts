@@ -1,20 +1,20 @@
-import { installModalApi } from "./shared/modal";
+import { installModalApi } from "./features/modal/api";
 import {
   initializePluginManager,
   installPluginApi,
   installPluginSettings,
-} from "./shared/plugins";
-import { installBannerApi } from "./shared/banner";
-import { installSettingsApi } from "./shared/settings";
-import { installStore } from "./shared/store";
-import { installDefaultSettings } from "./shared/defaults";
-import { installThemeEngine } from "./shared/theme/engine";
-import { installThemeSettings } from "./shared/theme/picker";
-import { installDesktopBridge } from "./shared/desktop";
-import { installNotificationApi } from "./shared/notify";
-import { installExternalLinks } from "./shared/links";
-import { getChangelog } from "./shared/release";
-import { getScope, getYapmod } from "./shared/scope";
+} from "./features/plugins/api";
+import { installBannerApi } from "./features/banners/api";
+import { installSettingsApi } from "./features/settings/api";
+import { installStore } from "./core/store";
+import { installDefaultSettings } from "./features/settings/defaults";
+import { installThemeEngine } from "./features/themes/engine";
+import { installThemeSettings } from "./features/themes/settings";
+import { installDesktopBridge } from "./core/desktop";
+import { installNotificationApi } from "./core/notify";
+import { installExternalLinks } from "./core/links";
+import { getChangelog } from "./features/settings/release";
+import { getScope, getYapmod } from "./core/scope";
 
 const scope = getScope();
 const yapmod = getYapmod();
