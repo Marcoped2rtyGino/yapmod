@@ -141,7 +141,7 @@ A few things to keep in mind:
 1. Create a folder with a `manifest.json` and a `theme.css`.
 2. Open **Settings → Themes** in yapmod.
 3. Press **Import theme** and pick your folder, or press **Open folder** and copy it into the themes folder.
-4. Press **Refresh**, then click your theme to use it. To share it in the community gallery, follow [Submit a theme](community-themes#submit-a-theme).
+4. Press **Refresh**, then click your theme to use it. To share it in the community gallery, follow [Submit a theme](submit-a-theme).
 
 ## Rules
 

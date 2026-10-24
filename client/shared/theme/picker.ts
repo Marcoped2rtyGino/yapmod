@@ -949,7 +949,7 @@ function createThemeSection(): SettingsSection {
             text: "Submit a theme",
             attrs: { type: "button" },
             on: {
-              click: () => openExternally("https://ilyeshdz.github.io/yapmod/docs/community-themes/"),
+              click: () => openExternally("https://ilyeshdz.github.io/yapmod/docs/submit-a-theme/"),
             },
           }),
         ],

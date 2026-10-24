@@ -11,3 +11,6 @@ under 1 MB.
 
 The website build validates these folders and publishes a static catalog and
 the theme files. Do not edit the generated catalog by hand.
+
+See the [Submit a theme guide](https://ilyeshdz.github.io/yapmod/docs/submit-a-theme/)
+for the full pull request and validation steps.
