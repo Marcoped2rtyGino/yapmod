@@ -1,0 +1,17 @@
+{
+  "id": "portal",
+  "name": "Portal",
+  "version": "1.0.0",
+  "author": "Kari (for GLaDOS)",
+  "description": "custom one",
+  "license": "MIT",
+  "mode": "dark",
+  "tags": [
+    "dark",
+    "green",
+    "minimal"
+  ],
+  "api": 1,
+  "css": "theme.css",
+  "preview": "preview.png"
+}
