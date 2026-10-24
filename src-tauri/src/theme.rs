@@ -361,8 +361,7 @@ pub async fn install_community_theme(app: AppHandle, id: String) -> Result<Theme
         return Err("a theme with this id is already installed; remove it first".to_string());
     }
 
-    fs::create_dir_all(&target).map_err(|error| error.to_string())?;
-    let install_result = (|| {
+    install_theme_folder(&target, |target| {
         fs::write(target.join(MANIFEST_FILE), &manifest_bytes)?;
         fs::write(target.join(css_file), css)?;
 
@@ -370,15 +369,9 @@ pub async fn install_community_theme(app: AppHandle, id: String) -> Result<Theme
             fs::write(target.join(preview_file), preview)?;
         }
 
-        read_bundle(&target, true)
-            .ok_or_else(|| std::io::Error::other("the downloaded theme could not be read back"))
-    })();
-
-    if install_result.is_err() {
-        let _ = fs::remove_dir_all(&target);
-    }
-
-    install_result.map_err(|error| error.to_string())
+        Ok(())
+    })
+    .map_err(|error| error.to_string())
 }
 
 /// The mode a theme asks for, with everything unknown treated as dark.
@@ -487,6 +480,34 @@ fn copy_folder(source: &Path, target: &Path) -> Result<(), Box<dyn std::error::E
     }
 
     Ok(())
+}
+
+/// Creates an installed theme folder, populates it, and removes partial output
+/// if copying, writing, or reading the theme back fails.
+fn install_theme_folder(
+    target: &Path,
+    populate: impl FnOnce(&Path) -> Result<(), Box<dyn std::error::Error>>,
+) -> Result<ThemeBundle, Box<dyn std::error::Error>> {
+    let parent = target
+        .parent()
+        .ok_or_else(|| std::io::Error::other("the theme folder has no parent"))?;
+    fs::create_dir_all(parent)?;
+    fs::create_dir(target)?;
+
+    let install_result = (|| {
+        populate(target)?;
+        read_bundle(target, true).ok_or_else(|| {
+            Box::<dyn std::error::Error>::from(std::io::Error::other(
+                "the theme could not be read back",
+            ))
+        })
+    })();
+
+    if install_result.is_err() {
+        let _ = fs::remove_dir_all(target);
+    }
+
+    install_result
 }
 
 /// Turns a path the user typed into a real one.
@@ -684,20 +705,8 @@ pub fn install_theme(app: AppHandle, source: String) -> Result<ThemeBundle, Stri
         return Err("a theme with this id is already installed; remove it first".to_string());
     }
 
-    // Installing a theme that already sits in the themes folder would copy
-    // the folder onto itself, and take the theme with it.
-    if let (Ok(source), Ok(target)) = (source.canonicalize(), target.canonicalize())
-        && source == target
-    {
-        return Err("this theme is already installed".to_string());
-    }
-
-    if let Err(error) = copy_folder(&source, &target) {
-        let _ = fs::remove_dir_all(&target);
-        return Err(error.to_string());
-    }
-
-    read_bundle(&target, true).ok_or_else(|| "the theme could not be read back".to_string())
+    install_theme_folder(&target, |target| copy_folder(&source, target))
+        .map_err(|error| error.to_string())
 }
 
 /// Removes an installed theme.
