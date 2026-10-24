@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { Dirent, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 export type CommunityThemeEntry = {
@@ -13,8 +13,8 @@ export function getCommunityThemes(): CommunityThemeEntry[] {
   const source = resolve(process.cwd(), "../community-themes");
 
   return readdirSync(source, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && !entry.name.startsWith("."))
-    .map((entry) => {
+    .filter((entry: Dirent) => entry.isDirectory() && !entry.name.startsWith("."))
+    .map((entry: Dirent) => {
       const manifest = JSON.parse(
         readFileSync(resolve(source, entry.name, "manifest.json"), "utf8"),
       ) as Partial<CommunityThemeEntry>;
@@ -26,5 +26,5 @@ export function getCommunityThemes(): CommunityThemeEntry[] {
         preview: typeof manifest.preview === "string" ? manifest.preview : "",
       };
     })
-    .sort((left, right) => left.name.localeCompare(right.name));
+    .sort((left: CommunityThemeEntry, right: CommunityThemeEntry) => left.name.localeCompare(right.name));
 }
